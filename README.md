@@ -63,14 +63,3 @@ Placas de ejemplo: `ABC123`, `DEF456` (carros con mensualidad), `MNO12A`, `PQR34
 python -m pytest -q
 ```
 Las pruebas usan SQLite en memoria, no necesitan MySQL.
-
-## Publicar en GitHub
-
-```bash
-git init
-git add .
-git commit -m "Iteración 1: gestión de entrada y salida de vehículos"
-git branch -M main
-git remote add origin https://github.com/<su-usuario>/autos-colombia.git
-git push -u origin main
-```
