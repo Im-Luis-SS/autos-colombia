@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+.env
+.pytest_cache/
+instance/
+*.db
+.idea/
+.vscode/
+diagrams/plantuml.jar
+docs/_build/

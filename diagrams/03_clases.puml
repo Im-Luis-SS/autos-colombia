@@ -1,0 +1,121 @@
+@startuml 03_clases
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam classAttributeIconSize 0
+skinparam ArrowColor #1F3A5F
+skinparam class {
+  BackgroundColor #F4F7FB
+  BorderColor #1F3A5F
+}
+title Diagrama de clases - Gestión de entrada y salida de vehículos
+hide empty members
+left to right direction
+
+package "Modelos (dominio)" {
+  enum Rol {
+    OPERARIO
+    ADMINISTRADOR
+  }
+  enum TipoVehiculo {
+    CARRO
+    MOTO
+  }
+  enum EstadoCelda {
+    LIBRE
+    OCUPADA
+    MANTENIMIENTO
+  }
+  enum EstadoMensualidad {
+    ACTIVA
+    VENCIDA
+    CANCELADA
+  }
+
+  class UsuarioSistema {
+    - id : int
+    - nombre : str
+    - username : str
+    - passwordHash : str
+    - rol : Rol
+    - activo : bool
+    + verificarClave(clave : str) : bool
+    + esAdministrador() : bool
+  }
+
+  class Cliente {
+    - id : int
+    - tipoDocumento : str
+    - numeroDocumento : str
+    - nombres : str
+    - apellidos : str
+    - telefono : str
+    - email : str
+  }
+
+  class Vehiculo {
+    - id : int
+    - placa : str
+    - tipo : TipoVehiculo
+    - marca : str
+    - color : str
+  }
+
+  class Mensualidad {
+    - id : int
+    - fechaInicio : date
+    - fechaFin : date
+    - estado : EstadoMensualidad
+    + estaVigente(fecha : date) : bool
+  }
+
+  class Celda {
+    - id : int
+    - codigo : str
+    - tipo : TipoVehiculo
+    - estado : EstadoCelda
+    + ocupar() : void
+    + liberar() : void
+  }
+
+  class Movimiento {
+    - id : int
+    - fechaHoraEntrada : datetime
+    - fechaHoraSalida : datetime
+    - observaciones : str
+    + estaAbierto() : bool
+    + registrarSalida(operario, fechaHora) : void
+    + duracion() : timedelta
+  }
+}
+
+package "Servicios (negocio)" {
+  class AuthService {
+    + autenticar(username, clave) : UsuarioSistema
+  }
+  class MovimientoService {
+    + registrarEntrada(placa, operario, observaciones) : Movimiento
+    + registrarSalida(placa, operario, observaciones) : Movimiento
+    + vehiculosEnParqueadero(filtroPlaca) : List<Movimiento>
+    + historial(placa, desde, hasta) : List<Movimiento>
+    - asignarCelda(vehiculo) : Celda
+    - validarMensualidad(vehiculo) : Mensualidad
+  }
+  class OcupacionService {
+    + resumen() : dict
+    + celdas() : List<Celda>
+  }
+  class ReglaNegocioError <<exception>>
+}
+
+
+Cliente "1" -- "0..*" Vehiculo : es propietario de
+Vehiculo "1" -- "0..*" Mensualidad : tiene
+Vehiculo "1" -- "0..*" Movimiento : genera
+Celda "1" -- "0..*" Movimiento : se usa en
+UsuarioSistema "1" -- "0..*" Movimiento : registra entrada
+UsuarioSistema "0..1" -- "0..*" Movimiento : registra salida
+
+AuthService ..> UsuarioSistema : usa
+MovimientoService ..> Movimiento : crea / actualiza
+MovimientoService ..> Celda : asigna / libera
+@enduml

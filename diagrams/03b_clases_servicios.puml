@@ -1,0 +1,50 @@
+@startuml 03b_clases_servicios
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam classAttributeIconSize 0
+skinparam ArrowColor #1F3A5F
+skinparam nodesep 40
+skinparam ranksep 60
+skinparam class {
+  BackgroundColor #F4F7FB
+  BorderColor #1F3A5F
+}
+hide empty members
+title Diagrama de clases (b) - Servicios de negocio
+
+class AuthService {
+  + autenticar(username, clave) : UsuarioSistema
+}
+
+class MovimientoService {
+  + registrarEntrada(placa, operario, observaciones, celda) : Movimiento
+  + registrarSalida(placa, operario, observaciones) : Movimiento
+  + vehiculosEnParqueadero(filtroPlaca) : List<Movimiento>
+  + historial(placa, desde, hasta, pagina) : Pagina<Movimiento>
+  - validarMensualidad(vehiculo, fecha) : Mensualidad
+  - asignarCelda(vehiculo, celda) : Celda
+}
+
+class OcupacionService {
+  + resumen() : dict
+  + celdas() : List<Celda>
+}
+
+class ReglaNegocioError <<exception>> {
+}
+
+class UsuarioSistema
+class Vehiculo
+class Mensualidad
+class Celda
+class Movimiento
+
+AuthService ..> UsuarioSistema : consulta
+MovimientoService ..> Vehiculo : consulta
+MovimientoService ..> Mensualidad : valida vigencia
+MovimientoService ..> Celda : asigna / libera
+MovimientoService ..> Movimiento : crea / cierra
+MovimientoService ..> ReglaNegocioError : lanza
+AuthService ..> ReglaNegocioError : lanza
+OcupacionService ..> Celda : consulta
+@enduml

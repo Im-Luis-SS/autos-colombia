@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block titulo %}Vehículos dentro{% endblock %}
+{% block contenido %}
+<h1>Vehículos en el parqueadero</h1>
+<p class="sub">Vehículos con entrada registrada y sin salida.</p>
+
+<form method="get" class="tarjeta fila-filtros">
+  <div>
+    <label for="placa">Buscar por placa</label>
+    <input type="text" id="placa" name="placa" value="{{ placa }}" placeholder="ABC123">
+  </div>
+  <button class="boton" type="submit">Buscar</button>
+</form>
+
+<div class="tarjeta">
+  {% if movimientos %}
+  <table>
+    <thead><tr><th>Placa</th><th>Tipo</th><th>Cliente</th><th>Celda</th><th>Entrada</th><th>Tiempo dentro</th></tr></thead>
+    <tbody>
+    {% for m in movimientos %}
+      <tr>
+        <td><span class="placa-tag">{{ m.vehiculo.placa }}</span></td>
+        <td>{{ m.vehiculo.tipo.title() }}</td>
+        <td>{{ m.vehiculo.cliente.nombre_completo }}</td>
+        <td>{{ m.celda.codigo }}</td>
+        <td>{{ m.fecha_hora_entrada.strftime('%d/%m/%Y %H:%M') }}</td>
+        <td>{{ m.duracion() | duracion }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  <p style="color:var(--gris); margin-bottom:0;">Total: {{ movimientos|length }}</p>
+  {% else %}
+  <div class="vacio">No hay vehículos dentro del parqueadero{% if placa %} con esa placa{% endif %}.</div>
+  {% endif %}
+</div>
+{% endblock %}

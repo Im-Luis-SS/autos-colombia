@@ -1,0 +1,80 @@
+@startuml 06_mr
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam ArrowColor #1F3A5F
+hide circle
+skinparam entity {
+  BackgroundColor #F4F7FB
+  BorderColor #1F3A5F
+}
+title Modelo Relacional (MR) - PK y FK (3FN)
+left to right direction
+
+entity "usuario_sistema" as usuario {
+  * id_usuario <<PK>>
+  --
+  nombre
+  username <<UK>>
+  password_hash
+  rol
+  activo
+}
+
+entity "cliente" as cliente {
+  * id_cliente <<PK>>
+  --
+  tipo_documento
+  numero_documento
+  nombres
+  apellidos
+  telefono
+  email
+  <<UK: tipo_documento + numero_documento>>
+}
+
+entity "vehiculo" as vehiculo {
+  * id_vehiculo <<PK>>
+  --
+  placa <<UK>>
+  tipo
+  marca
+  color
+  # id_cliente <<FK>>
+}
+
+entity "mensualidad" as mensualidad {
+  * id_mensualidad <<PK>>
+  --
+  fecha_inicio
+  fecha_fin
+  estado
+  # id_vehiculo <<FK>>
+}
+
+entity "celda" as celda {
+  * id_celda <<PK>>
+  --
+  codigo <<UK>>
+  tipo
+  estado
+}
+
+entity "movimiento" as movimiento {
+  * id_movimiento <<PK>>
+  --
+  fecha_hora_entrada
+  fecha_hora_salida
+  observaciones
+  # id_vehiculo <<FK>>
+  # id_celda <<FK>>
+  # id_usuario_entrada <<FK>>
+  # id_usuario_salida <<FK>>
+}
+
+cliente ||--o{ vehiculo
+vehiculo ||--o{ mensualidad
+vehiculo ||--o{ movimiento
+celda ||--o{ movimiento
+usuario ||--o{ movimiento : entrada
+usuario |o--o{ movimiento : salida
+@enduml

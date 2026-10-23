@@ -1,0 +1,47 @@
+@startuml 02_casos_uso
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam ArrowColor #1F3A5F
+skinparam usecase {
+  BackgroundColor #DCE8F7
+  BorderColor #1F3A5F
+}
+skinparam rectangle {
+  BorderColor #5B7DB1
+}
+left to right direction
+title Diagrama de casos de uso - Gestión de entrada y salida de vehículos
+
+actor "Operario" as OP
+actor "Administrador" as AD
+OP <|-- AD
+
+rectangle "Sistema de información Autos Colombia" {
+  usecase "CU-01\nIniciar sesión" as CU1
+  usecase "CU-02\nRegistrar entrada\nde vehículo" as CU2
+  usecase "CU-03\nRegistrar salida\nde vehículo" as CU3
+  usecase "CU-04\nConsultar vehículos\nen el parqueadero" as CU4
+  usecase "CU-05\nConsultar historial\nde movimientos" as CU5
+  usecase "CU-06\nVer ocupación\nde celdas" as CU6
+  usecase "Validar mensualidad\nvigente" as V
+  usecase "Asignar celda\nlibre" as A
+  usecase "Liberar celda" as L
+}
+
+OP --> CU1
+OP --> CU2
+OP --> CU3
+OP --> CU4
+OP --> CU6
+AD --> CU5
+
+CU2 ..> V : <<include>>
+CU2 ..> A : <<include>>
+CU3 ..> L : <<include>>
+
+note right of AD
+  El Administrador hereda todo lo
+  del Operario y además consulta
+  el historial completo (CU-05).
+end note
+@enduml

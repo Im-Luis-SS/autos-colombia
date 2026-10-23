@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block titulo %}Registrar entrada{% endblock %}
+{% block contenido %}
+<h1>Registrar entrada de vehículo</h1>
+<p class="sub">Se valida la mensualidad y se asigna una celda libre del tipo del vehículo.</p>
+<form method="post" class="tarjeta" style="max-width:520px;">
+  <label for="placa">Placa</label>
+  <input class="placa" type="text" id="placa" name="placa" maxlength="8" value="{{ form.get('placa', '') }}" placeholder="ABC123" autofocus required>
+
+  <label for="celda">Celda (opcional)</label>
+  <input type="text" id="celda" name="celda" maxlength="10" value="{{ form.get('celda', '') }}" placeholder="Vacío = asignación automática">
+
+  <label for="observaciones">Observaciones (opcional)</label>
+  <textarea id="observaciones" name="observaciones" rows="3" maxlength="255" placeholder="Ej. Raspón en puerta derecha">{{ form.get('observaciones', '') }}</textarea>
+
+  <button class="boton" type="submit">Registrar entrada</button>
+  <a class="boton sec" href="{{ url_for('consultas.panel') }}" style="margin-left:8px;">Cancelar</a>
+</form>
+{% endblock %}

@@ -1,0 +1,52 @@
+@startuml 04_paquetes
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam ArrowColor #1F3A5F
+skinparam package {
+  BackgroundColor #F4F7FB
+  BorderColor #1F3A5F
+}
+title Diagrama de paquetes - Autos Colombia (Iteración 1)
+
+package "app" as APP {
+  package "presentation" as PRES {
+    package "routes" as ROUTES {
+    }
+    package "templates" as TPL {
+    }
+    package "static" as STAT {
+    }
+  }
+  package "services" as SERV {
+  }
+  package "models" as MOD {
+  }
+  package "core" as CORE {
+  }
+}
+package "tests" as TESTS {
+}
+package "db" as DB {
+}
+
+ROUTES --> SERV : usa
+ROUTES --> TPL : renderiza
+TPL ..> STAT : referencia
+SERV --> MOD : usa
+SERV --> CORE : errores
+MOD --> CORE : extensiones (db)
+ROUTES --> CORE : config / login
+TESTS ..> SERV : prueba
+TESTS ..> ROUTES : prueba
+DB ..> MOD : script SQL equivalente
+
+note right of APP
+  routes      : auth, movimientos, consultas
+  services    : AuthService, MovimientoService,
+                OcupacionService
+  models      : UsuarioSistema, Cliente, Vehiculo,
+                Mensualidad, Celda, Movimiento
+  core        : configuración, extensiones,
+                ReglaNegocioError
+end note
+@enduml

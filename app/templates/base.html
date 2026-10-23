@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block titulo %}Autos Colombia{% endblock %} · Autos Colombia</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+{% if g.usuario %}
+<header class="barra">
+  <div class="marca">Autos <span>Colombia</span></div>
+  <nav class="menu">
+    <a href="{{ url_for('consultas.panel') }}" class="{{ 'activo' if request.endpoint == 'consultas.panel' }}">Panel</a>
+    <a href="{{ url_for('movimientos.entrada') }}" class="{{ 'activo' if request.endpoint == 'movimientos.entrada' }}">Registrar entrada</a>
+    <a href="{{ url_for('movimientos.salida') }}" class="{{ 'activo' if request.endpoint == 'movimientos.salida' }}">Registrar salida</a>
+    <a href="{{ url_for('consultas.dentro') }}" class="{{ 'activo' if request.endpoint == 'consultas.dentro' }}">Vehículos dentro</a>
+    {% if g.usuario.es_administrador() %}
+    <a href="{{ url_for('consultas.historial') }}" class="{{ 'activo' if request.endpoint == 'consultas.historial' }}">Historial</a>
+    {% endif %}
+  </nav>
+  <div class="sesion">
+    <span>{{ g.usuario.nombre }} · {{ g.usuario.rol.title() }}</span>
+    <form method="post" action="{{ url_for('auth.logout') }}"><button type="submit">Salir</button></form>
+  </div>
+</header>
+{% endif %}
+<main>
+  {% with mensajes = get_flashed_messages(with_categories=true) %}
+    {% for categoria, mensaje in mensajes %}
+      <div class="aviso {{ categoria }}" role="alert">{{ mensaje }}</div>
+    {% endfor %}
+  {% endwith %}
+  {% block contenido %}{% endblock %}
+</main>
+</body>
+</html>

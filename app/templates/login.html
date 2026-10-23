@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block titulo %}Iniciar sesión{% endblock %}
+{% block contenido %}
+<div class="login-caja" style="margin: 60px auto;">
+  <h1>Autos Colombia</h1>
+  <p class="sub" style="text-align:center;">Sistema de gestión del parqueadero</p>
+  <form method="post" class="tarjeta">
+    <label for="username">Usuario</label>
+    <input type="text" id="username" name="username" autocomplete="username" autofocus required>
+    <label for="password">Contraseña</label>
+    <input type="password" id="password" name="password" autocomplete="current-password" required>
+    <button class="boton" type="submit" style="width:100%;">Ingresar</button>
+  </form>
+</div>
+{% endblock %}

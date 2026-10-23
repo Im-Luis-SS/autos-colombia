@@ -1,0 +1,63 @@
+@startuml 01_arquitectura
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam componentStyle rectangle
+skinparam packageStyle rectangle
+skinparam ArrowColor #1F3A5F
+skinparam node {
+  BackgroundColor #F4F7FB
+  BorderColor #1F3A5F
+}
+skinparam package {
+  BackgroundColor #FFFFFF
+  BorderColor #5B7DB1
+}
+skinparam component {
+  BackgroundColor #DCE8F7
+  BorderColor #1F3A5F
+}
+skinparam database {
+  BackgroundColor #FFF3D6
+  BorderColor #B8860B
+}
+title Arquitectura del sistema - Parqueadero "Autos Colombia" (Iteración 1)
+
+actor "Operario /\nAdministrador" as U
+
+node "Cliente: Navegador web" as NAV {
+  component "Interfaz HTML + CSS\n(plantillas renderizadas)" as UI
+}
+
+node "Servidor de aplicación (Python 3 + Flask)" as APP {
+  package "Capa de presentación" as P1 {
+    component "Blueprints / Rutas\n(auth, movimientos, consultas)" as RT
+    component "Plantillas Jinja2" as TPL
+  }
+  package "Capa de negocio (servicios)" as P2 {
+    component "AuthService" as AS
+    component "MovimientoService" as MS
+    component "OcupacionService" as OS
+  }
+  package "Capa de acceso a datos" as P3 {
+    component "Modelos ORM\n(SQLAlchemy)" as ORM
+  }
+}
+
+database "MySQL 8\nBD: autos_colombia" as DB
+
+U --> UI : usa
+UI --> RT : HTTP (GET / POST)
+RT --> TPL : renderiza
+RT --> AS
+RT --> MS
+RT --> OS
+AS --> ORM
+MS --> ORM
+OS --> ORM
+ORM --> DB : SQL (PyMySQL)
+
+note bottom of APP
+  Arquitectura en capas (3 capas lógicas) con patrón MVC en la
+  presentación. Las reglas de negocio viven únicamente en los servicios.
+end note
+@enduml

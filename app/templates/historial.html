@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block titulo %}Historial{% endblock %}
+{% block contenido %}
+<h1>Historial de movimientos</h1>
+<p class="sub">Todas las entradas y salidas registradas (solo administradores).</p>
+
+<form method="get" class="tarjeta fila-filtros">
+  <div><label for="placa">Placa</label><input type="text" id="placa" name="placa" value="{{ placa }}" placeholder="ABC123"></div>
+  <div><label for="desde">Desde</label><input type="date" id="desde" name="desde" value="{{ desde }}"></div>
+  <div><label for="hasta">Hasta</label><input type="date" id="hasta" name="hasta" value="{{ hasta }}"></div>
+  <button class="boton" type="submit">Filtrar</button>
+</form>
+
+<div class="tarjeta">
+  {% if pagina.items %}
+  <table>
+    <thead><tr><th>Placa</th><th>Celda</th><th>Entrada</th><th>Salida</th><th>Permanencia</th><th>Operario (ent. / sal.)</th><th>Observaciones</th></tr></thead>
+    <tbody>
+    {% for m in pagina.items %}
+      <tr>
+        <td><span class="placa-tag">{{ m.vehiculo.placa }}</span></td>
+        <td>{{ m.celda.codigo }}</td>
+        <td>{{ m.fecha_hora_entrada.strftime('%d/%m/%Y %H:%M') }}</td>
+        <td>{% if m.fecha_hora_salida %}{{ m.fecha_hora_salida.strftime('%d/%m/%Y %H:%M') }}{% else %}<span class="chip dentro">Dentro</span>{% endif %}</td>
+        <td>{{ m.duracion() | duracion }}</td>
+        <td>{{ m.usuario_entrada.username }}{% if m.usuario_salida %} / {{ m.usuario_salida.username }}{% endif %}</td>
+        <td>{{ m.observaciones or '—' }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  <div class="pag">
+    {% if pagina.has_prev %}<a href="{{ url_for('consultas.historial', placa=placa, desde=desde, hasta=hasta, pagina=pagina.prev_num) }}">← Anterior</a>{% endif %}
+    <span>Página {{ pagina.page }} de {{ pagina.pages }} · {{ pagina.total }} registros</span>
+    {% if pagina.has_next %}<a href="{{ url_for('consultas.historial', placa=placa, desde=desde, hasta=hasta, pagina=pagina.next_num) }}">Siguiente →</a>{% endif %}
+  </div>
+  {% else %}
+  <div class="vacio">No hay movimientos que coincidan con el filtro.</div>
+  {% endif %}
+</div>
+{% endblock %}

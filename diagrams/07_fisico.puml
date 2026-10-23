@@ -1,0 +1,82 @@
+@startuml 07_fisico
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam ArrowColor #1F3A5F
+hide circle
+skinparam entity {
+  BackgroundColor #F4F7FB
+  BorderColor #1F3A5F
+}
+title Modelo físico (MySQL 8 / InnoDB) - autos_colombia
+left to right direction
+
+entity "usuario_sistema" as usuario {
+  * id_usuario : INT UNSIGNED <<PK, AI>>
+  --
+  nombre : VARCHAR(100) NOT NULL
+  username : VARCHAR(50) NOT NULL <<UK>>
+  password_hash : VARCHAR(255) NOT NULL
+  rol : ENUM('OPERARIO','ADMINISTRADOR') NOT NULL
+  activo : TINYINT(1) NOT NULL DEFAULT 1
+}
+
+entity "cliente" as cliente {
+  * id_cliente : INT UNSIGNED <<PK, AI>>
+  --
+  tipo_documento : ENUM('CC','CE','NIT','PAS') NOT NULL
+  numero_documento : VARCHAR(20) NOT NULL
+  nombres : VARCHAR(100) NOT NULL
+  apellidos : VARCHAR(100) NOT NULL
+  telefono : VARCHAR(20)
+  email : VARCHAR(120)
+  <<UK: tipo_documento, numero_documento>>
+}
+
+entity "vehiculo" as vehiculo {
+  * id_vehiculo : INT UNSIGNED <<PK, AI>>
+  --
+  placa : VARCHAR(10) NOT NULL <<UK>>
+  tipo : ENUM('CARRO','MOTO') NOT NULL
+  marca : VARCHAR(50)
+  color : VARCHAR(30)
+  # id_cliente : INT UNSIGNED NOT NULL <<FK>>
+}
+
+entity "mensualidad" as mensualidad {
+  * id_mensualidad : INT UNSIGNED <<PK, AI>>
+  --
+  fecha_inicio : DATE NOT NULL
+  fecha_fin : DATE NOT NULL
+  estado : ENUM('ACTIVA','VENCIDA','CANCELADA') NOT NULL
+  # id_vehiculo : INT UNSIGNED NOT NULL <<FK>>
+}
+
+entity "celda" as celda {
+  * id_celda : INT UNSIGNED <<PK, AI>>
+  --
+  codigo : VARCHAR(10) NOT NULL <<UK>>
+  tipo : ENUM('CARRO','MOTO') NOT NULL
+  estado : ENUM('LIBRE','OCUPADA','MANTENIMIENTO') NOT NULL
+}
+
+entity "movimiento" as movimiento {
+  * id_movimiento : BIGINT UNSIGNED <<PK, AI>>
+  --
+  fecha_hora_entrada : DATETIME NOT NULL
+  fecha_hora_salida : DATETIME NULL
+  observaciones : VARCHAR(255)
+  # id_vehiculo : INT UNSIGNED NOT NULL <<FK>>
+  # id_celda : INT UNSIGNED NOT NULL <<FK>>
+  # id_usuario_entrada : INT UNSIGNED NOT NULL <<FK>>
+  # id_usuario_salida : INT UNSIGNED NULL <<FK>>
+  vehiculo_abierto : INT GENERATED <<UK>>
+  celda_abierta : INT GENERATED <<UK>>
+}
+
+cliente ||--o{ vehiculo
+vehiculo ||--o{ mensualidad
+vehiculo ||--o{ movimiento
+celda ||--o{ movimiento
+usuario ||--o{ movimiento : entrada
+usuario |o--o{ movimiento : salida
+@enduml

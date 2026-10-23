@@ -1,0 +1,69 @@
+@startuml 05_mer
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam ArrowColor #1F3A5F
+hide circle
+skinparam entity {
+  BackgroundColor #F4F7FB
+  BorderColor #1F3A5F
+}
+title Modelo Entidad-Relación (MER) - Gestión de entrada y salida
+left to right direction
+
+entity "CLIENTE" as cliente {
+  * tipo_documento
+  * numero_documento
+  --
+  nombres
+  apellidos
+  telefono
+  email
+}
+
+entity "VEHICULO" as vehiculo {
+  * placa
+  --
+  tipo
+  marca
+  color
+}
+
+entity "MENSUALIDAD" as mensualidad {
+  * codigo
+  --
+  fecha_inicio
+  fecha_fin
+  estado
+}
+
+entity "CELDA" as celda {
+  * codigo
+  --
+  tipo
+  estado
+}
+
+entity "MOVIMIENTO" as movimiento {
+  * codigo
+  --
+  fecha_hora_entrada
+  fecha_hora_salida
+  observaciones
+}
+
+entity "USUARIO_SISTEMA" as usuario {
+  * username
+  --
+  nombre
+  clave
+  rol
+  activo
+}
+
+cliente ||--o{ vehiculo : "es propietario de"
+vehiculo ||--o{ mensualidad : "tiene"
+vehiculo ||--o{ movimiento : "genera"
+celda ||--o{ movimiento : "se usa en"
+usuario ||--o{ movimiento : "registra entrada"
+usuario |o--o{ movimiento : "registra salida"
+@enduml
