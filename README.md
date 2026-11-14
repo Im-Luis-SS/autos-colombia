@@ -1,6 +1,6 @@
 # Autos Colombia – Sistema de información del parqueadero
 
-**Iteración 1: Gestión de la entrada y salida de vehículos.**
+**Iteración 1: entrada y salida de vehículos. Iteración 2: gestión de usuarios, clientes/vehículos/mensualidad y celdas.**
 Aplicación web hecha con Python 3, Flask y MySQL.
 
 ## Qué hace esta iteración
@@ -10,7 +10,14 @@ Aplicación web hecha con Python 3, Flask y MySQL.
 - Registro de **salida**: cierra el movimiento abierto y libera la celda.
 - Panel de ocupación de celdas (80 celdas: 70 de carro C-01..C-70 y 10 de moto M-01..M-10), listado de vehículos dentro e historial de movimientos con filtros (solo Administrador).
 
-> Los clientes, vehículos y mensualidades llegan por datos de ejemplo (`flask seed`). Su gestión completa (CRUD) y los pagos corresponden a las siguientes iteraciones.
+## Qué agrega la iteración 2 (solo Administrador)
+
+- **Usuarios:** crear, editar, activar/desactivar y restablecer contraseña (siempre queda un administrador activo).
+- **Clientes y vehículos:** registrar, buscar y editar; **mensualidad única de 30 días** por vehículo.
+- **Celdas:** crear, editar, poner en mantenimiento/habilitar y eliminar (si no tienen historial).
+- Protección CSRF en todos los formularios.
+
+> Los pagos corresponden a la siguiente iteración.
 
 ## Estructura
 
@@ -63,6 +70,7 @@ Placas de ejemplo: `ABC123`, `DEF456` (carros con mensualidad), `MNO12A`, `PQR34
 python -m pytest -q
 ```
 Por defecto usan SQLite (en memoria y en un archivo temporal), así que no necesitan MySQL.
+Para correr **todas** las pruebas sobre MySQL, defina `TEST_DATABASE_URL` (ver abajo) y ejecute `python -m pytest -q`.
 
 ### Pruebas de concurrencia sobre MySQL
 
@@ -79,14 +87,3 @@ sobre MySQL, el motor real del proyecto:
 
 La base debe terminar en `_test`: la prueba borra y recrea sus tablas y se niega a correr contra
 otra (así nunca toca `autos_colombia`).
-
-## Publicar en GitHub
-
-```bash
-git init
-git add .
-git commit -m "Iteración 1: gestión de entrada y salida de vehículos"
-git branch -M main
-git remote add origin https://github.com/Im-Luis-SS/autos-colombia.git
-git push -u origin main
-```
