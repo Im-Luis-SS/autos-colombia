@@ -1,7 +1,8 @@
-"""Control de acceso basado en sesión."""
+"""Control de acceso basado en sesión y protección CSRF."""
+import secrets
 from functools import wraps
 
-from flask import flash, g, redirect, session, url_for
+from flask import abort, current_app, flash, g, redirect, request, session, url_for
 
 from app.extensions import db
 from app.models import UsuarioSistema
@@ -13,6 +14,28 @@ def cargar_usuario_actual():
     if g.usuario is not None and not g.usuario.activo:
         session.clear()
         g.usuario = None
+
+
+def csrf_token() -> str:
+    """Token por sesión; se incluye como campo oculto en cada formulario."""
+    if "csrf" not in session:
+        session["csrf"] = secrets.token_urlsafe(32)
+    return session["csrf"]
+
+
+def proteger_csrf():
+    """Rechaza todo POST cuyo formulario no traiga el token de la sesión actual.
+
+    Evita que otra página web haga actuar al usuario (por ejemplo, desactivar un usuario
+    o borrar una celda) sin que se dé cuenta.
+    """
+    if not current_app.config.get("CSRF_ENABLED", True):
+        return
+    if request.method in ("POST", "PUT", "PATCH", "DELETE"):
+        esperado = session.get("csrf", "")
+        enviado = request.form.get("csrf_token", "")
+        if not esperado or not secrets.compare_digest(esperado.encode(), enviado.encode()):
+            abort(400)
 
 
 def login_requerido(vista):

@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block titulo %}{{ 'Editar celda' if celda else 'Nueva celda' }}{% endblock %}
+{% block contenido %}
+<h1>{{ 'Editar celda' if celda else 'Nueva celda' }}</h1>
+<form method="post" class="tarjeta" style="max-width:480px;">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <label for="codigo">Código (ej. C-71, M-11)</label>
+  <input type="text" id="codigo" name="codigo" maxlength="10" value="{{ form.get('codigo', '') }}" style="text-transform:uppercase;" required>
+  <label for="tipo">Tipo de celda</label>
+  <select id="tipo" name="tipo" required>
+    <option value="">Seleccione…</option>
+    {% for t in tipos %}<option value="{{ t }}" {{ 'selected' if form.get('tipo') == t }}>{{ t.title() }}</option>{% endfor %}
+  </select>
+  <div class="acciones" style="margin-top:14px;">
+    <button class="boton" type="submit">Guardar</button>
+    <a class="boton secundario" href="{{ url_for('celdas.lista') }}">Cancelar</a>
+  </div>
+</form>
+{% endblock %}

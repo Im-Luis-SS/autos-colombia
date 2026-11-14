@@ -1,0 +1,30 @@
+@startuml
+skinparam shadowing false
+skinparam defaultFontName Liberation Sans
+skinparam sequence {
+  ParticipantBackgroundColor #E8F0FB
+  ParticipantBorderColor #1F3A5F
+  LifeLineBorderColor #1F3A5F
+}
+title Secuencia – Poner una celda en mantenimiento (iteración 2)
+actor Administrador
+participant "Navegador" as UI
+participant "celdas_bp" as R
+participant "CeldaService" as S
+database "MySQL" as DB
+Administrador -> UI : pulsa «Mantenimiento» en una celda
+UI -> R : POST /celdas/{id}/estado (csrf_token)
+R -> R : proteger_csrf() y admin_requerido
+R -> S : cambiar_estado(id, "MANTENIMIENTO")
+S -> DB : obtener celda
+alt celda OCUPADA o ya en ese estado
+  S --> R : ReglaNegocioError
+  R --> UI : redirect + mensaje de error
+else celda LIBRE
+  S -> DB : UPDATE celda SET estado = MANTENIMIENTO
+  DB --> S : commit
+  S --> R : celda
+  R --> UI : redirect + "Celda ahora en mantenimiento"
+  note right: la asignación de celdas ignora\nlas que están en mantenimiento
+end
+@enduml

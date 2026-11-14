@@ -90,3 +90,15 @@ tr:hover td { background: #fafcff; }
 @media (max-width: 640px) {
   main { padding: 0 12px; } table { font-size: .85rem; } th, td { padding: 8px 6px; }
 }
+.encabezado-pagina { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.acciones { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+td.acciones { display: table-cell; white-space: nowrap; }
+td.acciones > * { display: inline-block; vertical-align: middle; margin: 2px 6px 2px 0; }
+.acciones form { margin: 0; display: inline; }
+.boton.peq { padding: 4px 10px; font-size: .82rem; margin-top: 0; }
+.boton.secundario { background: #fff; color: var(--azul); border: 1px solid var(--azul); }
+.boton.peligro { background: #b3261e; }
+.chip.activo { background: #e6f5ec; color: #145c34; }
+.chip.inactivo { background: #eceff3; color: #4b5563; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 640px) { .grid-2 { grid-template-columns: 1fr; } }

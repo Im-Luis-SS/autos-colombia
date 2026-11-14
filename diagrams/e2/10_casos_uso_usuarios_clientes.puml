@@ -1,0 +1,50 @@
+@startuml
+left to right direction
+skinparam shadowing false
+skinparam defaultFontName Liberation Sans
+skinparam actorStyle awesome
+skinparam usecase {
+  BackgroundColor #E8F0FB
+  BorderColor #1F3A5F
+}
+skinparam rectangle {
+  BackgroundColor #FFFFFF
+  BorderColor #1F3A5F
+}
+title Casos de uso – Gestión de usuarios, clientes y vehículos
+
+actor Administrador as ADM
+actor Operario as OPE
+
+rectangle "Sistema Autos Colombia" {
+  usecase "Iniciar sesión" as UC0
+  package "Usuarios del sistema" {
+    usecase "Consultar usuarios (HU-07)" as UC7
+    usecase "Crear usuario (HU-08)" as UC8
+    usecase "Editar usuario (HU-09)" as UC9
+    usecase "Activar / desactivar usuario (HU-10)" as UC10
+    usecase "Restablecer contraseña (HU-11)" as UC11
+  }
+  package "Clientes y vehículos" {
+    usecase "Registrar cliente (HU-12)" as UC12
+    usecase "Registrar vehículo (HU-13)" as UC13
+    usecase "Consultar / editar clientes\ny vehículos (HU-14)" as UC14
+    usecase "Activar mensualidad 30 días (HU-15)" as UC15
+  }
+}
+OPE --> UC0
+ADM --> UC0
+ADM --> UC7
+ADM --> UC8
+ADM --> UC9
+ADM --> UC10
+ADM --> UC11
+ADM --> UC12
+ADM --> UC13
+ADM --> UC14
+ADM --> UC15
+UC7 ..> UC0 : <<include>>
+UC8 ..> UC0 : <<include>>
+UC13 ..> UC12 : <<extend>>
+UC15 ..> UC13 : <<include>>
+@enduml

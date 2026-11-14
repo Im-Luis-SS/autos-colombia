@@ -74,6 +74,13 @@ class Vehiculo(db.Model):
     mensualidades = db.relationship("Mensualidad", back_populates="vehiculo")
     movimientos = db.relationship("Movimiento", back_populates="vehiculo")
 
+    def mensualidad_vigente(self, fecha: date):
+        """La mensualidad activa que cubre la fecha dada, o None."""
+        for m in self.mensualidades:
+            if m.esta_vigente(fecha):
+                return m
+        return None
+
 
 class Mensualidad(db.Model):
     __tablename__ = "mensualidad"
@@ -83,6 +90,14 @@ class Mensualidad(db.Model):
     fecha_fin = db.Column(db.Date, nullable=False)
     estado = db.Column(db.Enum(*ESTADOS_MENSUALIDAD, name="estado_mensualidad"), nullable=False)
     id_vehiculo = db.Column(db.Integer, db.ForeignKey("vehiculo.id_vehiculo"), nullable=False)
+
+    # Vale id_vehiculo mientras la mensualidad está ACTIVA y NULL en otro caso. Con el índice
+    # UNIQUE, la base de datos garantiza una sola mensualidad activa por vehículo.
+    mensualidad_activa = db.Column(
+        db.Integer,
+        db.Computed("CASE WHEN estado = 'ACTIVA' THEN id_vehiculo END"),
+    )
+    __table_args__ = (db.Index("uq_mensualidad_activa", "mensualidad_activa", unique=True),)
 
     vehiculo = db.relationship("Vehiculo", back_populates="mensualidades")
 

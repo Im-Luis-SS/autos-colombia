@@ -13,10 +13,11 @@ class Config:
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     ITEMS_POR_PAGINA = 15
+    CSRF_ENABLED = True
 
 
 class TestConfig(Config):
     TESTING = True
     SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
     SECRET_KEY = "test"
-    WTF_CSRF_ENABLED = False
+    CSRF_ENABLED = False  # las pruebas de seguridad lo activan explícitamente

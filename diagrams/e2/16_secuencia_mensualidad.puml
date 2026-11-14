@@ -1,0 +1,36 @@
+@startuml
+skinparam shadowing false
+skinparam defaultFontName Liberation Sans
+skinparam sequence {
+  ParticipantBackgroundColor #E8F0FB
+  ParticipantBorderColor #1F3A5F
+  LifeLineBorderColor #1F3A5F
+}
+title Secuencia – Registrar vehículo y activar mensualidad (iteración 2)
+actor Administrador
+participant "Navegador" as UI
+participant "clientes_bp" as R
+participant "ClienteService" as S
+database "MySQL" as DB
+Administrador -> UI : abre el cliente y pulsa «Agregar vehículo»
+UI -> R : POST /clientes/{id}/vehiculos/nuevo
+R -> S : registrar_vehiculo(id, placa, tipo, marca, color)
+S -> S : normalizar y validar placa; ¿placa repetida?
+S -> DB : INSERT vehiculo
+S --> R : vehículo
+R --> UI : redirect al detalle del cliente
+Administrador -> UI : pulsa «Activar mensualidad (30 días)»
+UI -> R : POST /vehiculos/{id}/mensualidad
+R -> S : activar_mensualidad(id_vehiculo)
+S -> DB : marcar VENCIDAS las ACTIVAS caducadas
+alt ya hay una mensualidad vigente
+  S --> R : ReglaNegocioError (vigente hasta dd/mm/aaaa)
+  R --> UI : redirect + mensaje
+else no hay vigente
+  S -> DB : INSERT mensualidad ACTIVA (hoy … hoy+29)
+  note right: UNIQUE (mensualidad_activa) impide\ndos activas aunque haya dos peticiones a la vez
+  DB --> S : commit
+  S --> R : mensualidad
+  R --> UI : redirect + "Mensualidad activada"
+end
+@enduml

@@ -1,0 +1,47 @@
+@startuml
+skinparam shadowing false
+skinparam defaultFontName Liberation Sans
+skinparam componentStyle rectangle
+skinparam ArrowColor #1F3A5F
+skinparam component {
+  BackgroundColor #E8F0FB
+  BorderColor #1F3A5F
+}
+skinparam package {
+  BorderColor #1F3A5F
+}
+title Diagrama de componentes - Autos Colombia (iteraciones 1 y 2)
+
+component "Navegador web\n(HTML + CSS)" as NAV
+
+package "Presentación (blueprints Flask + plantillas Jinja2)" as P {
+  component "auth_bp" as AU
+  component "movimientos_bp" as MO
+  component "consultas_bp" as CO
+  component "usuarios_bp «it.2»" as US
+  component "clientes_bp «it.2»" as CL
+  component "celdas_bp «it.2»" as CE
+}
+component "Seguridad: sesión, roles y CSRF «it.2»" as SEC
+
+package "Lógica de negocio (servicios)" as L {
+  component "AuthService" as SA
+  component "MovimientoService\nOcupacionService" as SM
+  component "UsuarioService «it.2»" as SU
+  component "ClienteService «it.2»" as SC
+  component "CeldaService «it.2»" as SCE
+}
+component "Modelos SQLAlchemy" as ORM
+database "MySQL 9.4" as DB
+
+NAV -down-> P : HTTP
+P -right-> SEC : usa
+AU -down-> SA
+MO -down-> SM
+CO -down-> SM
+US -down-> SU
+CL -down-> SC
+CE -down-> SCE
+L -down-> ORM
+ORM -down-> DB : PyMySQL
+@enduml

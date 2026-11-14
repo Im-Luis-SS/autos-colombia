@@ -4,6 +4,7 @@
 <h1>Registrar salida de vehículo</h1>
 <p class="sub">Se cierra el movimiento abierto del vehículo y se libera su celda.</p>
 <form method="post" class="tarjeta" style="max-width:520px;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
   <label for="placa">Placa</label>
   <input class="placa" type="text" id="placa" name="placa" maxlength="8" value="{{ form.get('placa', '') }}" placeholder="ABC123" autofocus required>
 

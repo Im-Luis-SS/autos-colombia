@@ -1,0 +1,37 @@
+@startuml
+left to right direction
+skinparam shadowing false
+skinparam defaultFontName Liberation Sans
+skinparam actorStyle awesome
+skinparam usecase {
+  BackgroundColor #E8F0FB
+  BorderColor #1F3A5F
+}
+skinparam rectangle {
+  BackgroundColor #FFFFFF
+  BorderColor #1F3A5F
+}
+title Casos de uso – Gestión de celdas
+
+actor Administrador as ADM
+actor Operario as OPE
+
+rectangle "Sistema Autos Colombia" {
+  usecase "Ver panel de ocupación" as UP
+  usecase "Consultar celdas (HU-16)" as UC16
+  usecase "Crear celda (HU-17)" as UC17
+  usecase "Editar celda (HU-18)" as UC18
+  usecase "Poner en mantenimiento /\nhabilitar celda (HU-19)" as UC19
+  usecase "Eliminar celda sin historial (HU-20)" as UC20
+  usecase "Registrar entrada (iteración 1)" as UE
+}
+OPE --> UP
+OPE --> UE
+ADM --> UP
+ADM --> UC16
+ADM --> UC17
+ADM --> UC18
+ADM --> UC19
+ADM --> UC20
+UE ..> UC19 : las celdas en mantenimiento\nno se asignan
+@enduml

@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block titulo %}Restablecer contraseña{% endblock %}
+{% block contenido %}
+<h1>Restablecer contraseña</h1>
+<p class="sub">Usuario: <strong>{{ usuario.username }}</strong> ({{ usuario.nombre }})</p>
+<form method="post" class="tarjeta" style="max-width:520px;">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <label for="clave">Nueva contraseña (mínimo 8, con letras y números)</label>
+  <input id="clave" name="clave" type="password" autocomplete="new-password" required>
+  <label for="confirmacion">Confirmar contraseña</label>
+  <input id="confirmacion" name="confirmacion" type="password" autocomplete="new-password" required>
+  <div class="acciones" style="margin-top:14px;">
+    <button class="boton" type="submit">Restablecer</button>
+    <a class="boton secundario" href="{{ url_for('usuarios.lista') }}">Cancelar</a>
+  </div>
+</form>
+{% endblock %}

@@ -1,8 +1,8 @@
-// Genera docs/Soto_Fernando_EA1.docx a partir de los diagramas, mockups y textos.
+// Genera docs/Soto_Luis_EA1.docx a partir de los diagramas, mockups y textos.
 const fs = require("fs");
 const path = require("path");
 const {
-  Document, Packer, Paragraph, TextRun, ImageRun, Table, TableRow, TableCell, AlignmentType,
+  Document, Packer, ExternalHyperlink, Paragraph, TextRun, ImageRun, Table, TableRow, TableCell, AlignmentType,
   HeadingLevel, BorderStyle, WidthType, ShadingType, LevelFormat, Footer, PageNumber, PageBreak,
   VerticalAlign,
 } = require("docx");
@@ -144,12 +144,12 @@ const portada = [
   new Paragraph({ spacing: { after: 80 }, alignment: AlignmentType.CENTER,
     children: [run("Presentado por:", { size: 22, color: GRIS })] }),
   new Paragraph({ spacing: { after: 300 }, alignment: AlignmentType.CENTER,
-    children: [run("Fernando Soto", { size: 28, bold: true })] }),
+    children: [run("Luis Fernando Soto", { size: 28, bold: true })] }),
   new Paragraph({ spacing: { after: 80 }, alignment: AlignmentType.CENTER,
     children: [run("Asesor:", { size: 22, color: GRIS })] }),
   new Paragraph({ spacing: { after: 700 }, alignment: AlignmentType.CENTER,
-    children: [resaltado("[Nombre del asesor]", { size: 24 })] }),
-  new Paragraph({ alignment: AlignmentType.CENTER, children: [run("Bogotá, Colombia · 20 de octubre de 2026", { size: 22, color: GRIS })] }),
+    children: [run("Reinaldo Rojas", { size: 26, bold: true })] }),
+  new Paragraph({ alignment: AlignmentType.CENTER, children: [run("San Pedro de Urabá, Antioquia · 23 de octubre de 2026", { size: 22, color: GRIS })] }),
 ];
 
 // ---------- INTRODUCCIÓN ----------
@@ -328,7 +328,7 @@ const entregables = [
   // 2.9
   h2("2.9 Código fuente", true),
   p("El sistema quedó implementado como una aplicación web en Python (Flask) con base de datos MySQL. Cubre las seis historias de usuario de la iteración y corre localmente con los pasos del README del repositorio."),
-  new Paragraph({ spacing: { after: 120 }, children: [run("Repositorio en GitHub: ", { bold: true }), resaltado("https://github.com/<usuario>/autos-colombia")] }),
+  new Paragraph({ spacing: { after: 120 }, children: [run("Repositorio en GitHub: ", { bold: true }), new ExternalHyperlink({ link: "https://github.com/Im-Luis-SS/autos-colombia", children: [run("https://github.com/Im-Luis-SS/autos-colombia", { color: "0563C1", underline: {} })] })] }),
   ...tabla("Estructura del proyecto", [2900, 6460], ["Ruta", "Contenido"], [
     ["app/models/", "Entidades: UsuarioSistema, Cliente, Vehiculo, Mensualidad, Celda, Movimiento."],
     ["app/services/", "Reglas de negocio: AuthService, MovimientoService, OcupacionService."],
@@ -379,7 +379,7 @@ const conclusiones = [
 
 // ---------- DOCUMENTO ----------
 const doc = new Document({
-  creator: "Fernando Soto",
+  creator: "Luis Fernando Soto",
   title: "Autos Colombia - EA1 Iteración 1: Gestión de entrada y salida de vehículos",
   styles: {
     default: { document: { run: { font: "Arial", size: 22 } } },
@@ -413,7 +413,7 @@ const doc = new Document({
 });
 
 Packer.toBuffer(doc).then((buf) => {
-  const out = path.join(__dirname, "Soto_Fernando_EA1.docx");
+  const out = path.join(__dirname, "Soto_Luis_EA1.docx");
   fs.writeFileSync(out, buf);
   console.log("OK", out, buf.length, "bytes;", nFigura, "figuras;", nTabla, "tablas");
 });

@@ -1,0 +1,33 @@
+@startuml
+skinparam shadowing false
+skinparam defaultFontName Liberation Sans
+skinparam sequence {
+  ParticipantBackgroundColor #E8F0FB
+  ParticipantBorderColor #1F3A5F
+  LifeLineBorderColor #1F3A5F
+}
+title Secuencia – Iniciar sesión y registrar entrada (iteración 1)
+actor Operario
+participant "Navegador" as UI
+participant "movimientos_bp\n(ruta)" as R
+participant "MovimientoService" as S
+database "MySQL" as DB
+
+Operario -> UI : escribe placa y observaciones
+UI -> R : POST /entrada (csrf_token)
+R -> R : proteger_csrf() y login_requerido
+R -> S : registrar_entrada(placa, operario, notas)
+S -> S : normalizar placa y validar nota (≤255)
+S -> DB : buscar vehículo y mensualidad vigente
+alt vehículo no existe, sin mensualidad o ya dentro
+  S --> R : ReglaNegocioError
+  R --> UI : 400 + mensaje
+else válido
+  S -> DB : elegir primera celda libre del tipo
+  S -> DB : INSERT movimiento + celda OCUPADA
+  note right: índices UNIQUE evitan doble entrada\no doble ocupación de celda
+  DB --> S : commit
+  S --> R : movimiento
+  R --> UI : redirect + "Entrada registrada"
+end
+@enduml

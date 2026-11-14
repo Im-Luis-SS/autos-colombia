@@ -66,7 +66,11 @@ CREATE TABLE mensualidad (
   fecha_fin       DATE NOT NULL,
   estado          ENUM('ACTIVA','VENCIDA','CANCELADA') NOT NULL,
   id_vehiculo     INT UNSIGNED NOT NULL,
+  -- Vale id_vehiculo si la mensualidad está ACTIVA y NULL si no: con el UNIQUE,
+  -- la BD impide dos mensualidades activas para el mismo vehículo.
+  mensualidad_activa INT UNSIGNED GENERATED ALWAYS AS (IF(estado = 'ACTIVA', id_vehiculo, NULL)) VIRTUAL,
   PRIMARY KEY (id_mensualidad),
+  UNIQUE KEY uq_mensualidad_activa (mensualidad_activa),
   KEY ix_mensualidad_vehiculo (id_vehiculo, estado),
   CONSTRAINT ck_mensualidad_fechas CHECK (fecha_fin >= fecha_inicio),
   CONSTRAINT fk_mensualidad_vehiculo FOREIGN KEY (id_vehiculo)

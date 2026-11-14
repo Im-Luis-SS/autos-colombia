@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block titulo %}{{ 'Editar cliente' if cliente else 'Nuevo cliente' }}{% endblock %}
+{% block contenido %}
+<h1>{{ 'Editar cliente' if cliente else 'Nuevo cliente' }}</h1>
+<form method="post" class="tarjeta" style="max-width:560px;">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  {% if cliente %}
+  <label>Documento</label><input value="{{ cliente.tipo_documento }} {{ cliente.numero_documento }}" disabled>
+  {% else %}
+  <div class="grid-2">
+    <div><label for="tipo_documento">Tipo</label>
+      <select id="tipo_documento" name="tipo_documento" required>
+        {% for t in tipos_doc %}<option value="{{ t }}" {{ 'selected' if form.get('tipo_documento') == t }}>{{ t }}</option>{% endfor %}
+      </select></div>
+    <div><label for="numero_documento">Número</label>
+      <input type="text" id="numero_documento" name="numero_documento" maxlength="20" value="{{ form.get('numero_documento', '') }}" required></div>
+  </div>
+  {% endif %}
+  <div class="grid-2">
+    <div><label for="nombres">Nombres</label><input type="text" id="nombres" name="nombres" maxlength="100" value="{{ form.get('nombres', '') }}" required></div>
+    <div><label for="apellidos">Apellidos</label><input type="text" id="apellidos" name="apellidos" maxlength="100" value="{{ form.get('apellidos', '') }}" required></div>
+  </div>
+  <div class="grid-2">
+    <div><label for="telefono">Teléfono (opcional)</label><input type="text" id="telefono" name="telefono" maxlength="20" value="{{ form.get('telefono', '') }}"></div>
+    <div><label for="email">Correo (opcional)</label><input type="text" id="email" name="email" maxlength="120" value="{{ form.get('email', '') }}"></div>
+  </div>
+  <div class="acciones" style="margin-top:14px;">
+    <button class="boton" type="submit">Guardar</button>
+    <a class="boton secundario" href="{{ url_for('clientes.detalle', id_cliente=cliente.id_cliente) if cliente else url_for('clientes.lista') }}">Cancelar</a>
+  </div>
+</form>
+{% endblock %}

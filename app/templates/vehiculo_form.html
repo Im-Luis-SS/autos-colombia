@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block titulo %}{{ 'Editar vehículo' if vehiculo else 'Nuevo vehículo' }}{% endblock %}
+{% block contenido %}
+<h1>{{ 'Editar vehículo' if vehiculo else 'Nuevo vehículo' }}</h1>
+<p class="sub">Cliente: <strong>{{ cliente.nombre_completo }}</strong></p>
+<form method="post" class="tarjeta" style="max-width:520px;">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  {% if vehiculo %}
+  <label>Placa</label><input value="{{ vehiculo.placa }}" disabled>
+  {% else %}
+  <label for="placa">Placa</label>
+  <input type="text" id="placa" name="placa" maxlength="7" value="{{ form.get('placa', '') }}" style="text-transform:uppercase;" required>
+  {% endif %}
+  <label for="tipo">Tipo de vehículo</label>
+  <select id="tipo" name="tipo" required>
+    <option value="">Seleccione…</option>
+    {% for t in tipos %}<option value="{{ t }}" {{ 'selected' if form.get('tipo') == t }}>{{ t.title() }}</option>{% endfor %}
+  </select>
+  <div class="grid-2">
+    <div><label for="marca">Marca (opcional)</label><input type="text" id="marca" name="marca" maxlength="50" value="{{ form.get('marca', '') }}"></div>
+    <div><label for="color">Color (opcional)</label><input type="text" id="color" name="color" maxlength="30" value="{{ form.get('color', '') }}"></div>
+  </div>
+  <div class="acciones" style="margin-top:14px;">
+    <button class="boton" type="submit">Guardar</button>
+    <a class="boton secundario" href="{{ url_for('clientes.detalle', id_cliente=cliente.id_cliente) }}">Cancelar</a>
+  </div>
+</form>
+{% endblock %}

@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block titulo %}Clientes{% endblock %}
+{% block contenido %}
+<div class="encabezado-pagina">
+  <h1>Clientes y vehículos</h1>
+  <a class="boton" href="{{ url_for('clientes.nuevo') }}">+ Nuevo cliente</a>
+</div>
+<form method="get" class="tarjeta fila-filtros">
+  <div><label for="q">Documento, nombre o placa</label><input type="text" id="q" name="q" value="{{ q }}"></div>
+  <button class="boton" type="submit">Buscar</button>
+</form>
+<div class="tarjeta">
+{% if pagina.items %}
+<table>
+  <thead><tr><th>Documento</th><th>Cliente</th><th>Teléfono</th><th>Vehículos</th><th></th></tr></thead>
+  <tbody>
+  {% for c in pagina.items %}
+  <tr>
+    <td>{{ c.tipo_documento }} {{ c.numero_documento }}</td>
+    <td>{{ c.nombre_completo }}</td>
+    <td>{{ c.telefono or '—' }}</td>
+    <td>{% for v in c.vehiculos %}<span class="placa-tag">{{ v.placa }}</span> {% else %}—{% endfor %}</td>
+    <td class="acciones"><a class="boton peq secundario" href="{{ url_for('clientes.detalle', id_cliente=c.id_cliente) }}">Ver</a></td>
+  </tr>
+  {% endfor %}
+  </tbody>
+</table>
+<div class="pag">
+  {% if pagina.has_prev %}<a href="{{ url_for('clientes.lista', q=q, pagina=pagina.prev_num) }}">← Anterior</a>{% endif %}
+  <span>Página {{ pagina.page }} de {{ pagina.pages or 1 }}</span>
+  {% if pagina.has_next %}<a href="{{ url_for('clientes.lista', q=q, pagina=pagina.next_num) }}">Siguiente →</a>{% endif %}
+</div>
+{% else %}<p class="vacio">No se encontraron clientes.</p>{% endif %}
+</div>
+{% endblock %}

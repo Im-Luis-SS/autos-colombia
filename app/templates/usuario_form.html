@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block titulo %}{{ 'Editar usuario' if usuario else 'Nuevo usuario' }}{% endblock %}
+{% block contenido %}
+<h1>{{ 'Editar usuario' if usuario else 'Nuevo usuario' }}</h1>
+<form method="post" class="tarjeta" style="max-width:520px;">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <label for="nombre">Nombre completo</label>
+  <input type="text" id="nombre" name="nombre" maxlength="100" value="{{ form.get('nombre', '') }}" required>
+  {% if usuario %}
+  <label>Usuario</label><input value="{{ usuario.username }}" disabled>
+  {% else %}
+  <label for="username">Nombre de usuario</label>
+  <input type="text" id="username" name="username" maxlength="30" value="{{ form.get('username', '') }}" autocomplete="off" required>
+  {% endif %}
+  <label for="rol">Rol</label>
+  <select id="rol" name="rol" required>
+    <option value="">Seleccione…</option>
+    {% for r in roles %}<option value="{{ r }}" {{ 'selected' if form.get('rol') == r }}>{{ r.title() }}</option>{% endfor %}
+  </select>
+  {% if not usuario %}
+  <label for="clave">Contraseña (mínimo 8, con letras y números)</label>
+  <input type="text" id="clave" name="clave" type="password" autocomplete="new-password" required>
+  <label for="confirmacion">Confirmar contraseña</label>
+  <input type="text" id="confirmacion" name="confirmacion" type="password" autocomplete="new-password" required>
+  {% endif %}
+  <div class="acciones" style="margin-top:14px;">
+    <button class="boton" type="submit">Guardar</button>
+    <a class="boton secundario" href="{{ url_for('usuarios.lista') }}">Cancelar</a>
+  </div>
+</form>
+{% endblock %}
