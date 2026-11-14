@@ -115,7 +115,9 @@ class Movimiento(db.Model):
     id_movimiento = db.Column(db.Integer, primary_key=True)
     fecha_hora_entrada = db.Column(db.DateTime, nullable=False)
     fecha_hora_salida = db.Column(db.DateTime)
-    observaciones = db.Column(db.String(255))
+    # Una nota por momento: así la de salida nunca pisa ni recorta la de entrada.
+    observaciones_entrada = db.Column(db.String(255))
+    observaciones_salida = db.Column(db.String(255))
     id_vehiculo = db.Column(db.Integer, db.ForeignKey("vehiculo.id_vehiculo"), nullable=False)
     id_celda = db.Column(db.Integer, db.ForeignKey("celda.id_celda"), nullable=False)
     id_usuario_entrada = db.Column(

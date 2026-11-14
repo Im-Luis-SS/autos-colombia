@@ -24,7 +24,12 @@
         <td>{% if m.fecha_hora_salida %}{{ m.fecha_hora_salida.strftime('%d/%m/%Y %H:%M') }}{% else %}<span class="chip dentro">Dentro</span>{% endif %}</td>
         <td>{{ m.duracion() | duracion }}</td>
         <td>{{ m.usuario_entrada.username }}{% if m.usuario_salida %} / {{ m.usuario_salida.username }}{% endif %}</td>
-        <td>{{ m.observaciones or '—' }}</td>
+        <td>
+          {% if m.observaciones_entrada or m.observaciones_salida %}
+            {% if m.observaciones_entrada %}<div><strong>Entrada:</strong> {{ m.observaciones_entrada }}</div>{% endif %}
+            {% if m.observaciones_salida %}<div><strong>Salida:</strong> {{ m.observaciones_salida }}</div>{% endif %}
+          {% else %}—{% endif %}
+        </td>
       </tr>
     {% endfor %}
     </tbody>

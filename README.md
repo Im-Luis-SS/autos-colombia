@@ -8,7 +8,7 @@ Aplicación web hecha con Python 3, Flask y MySQL.
 - Inicio de sesión con roles (Operario / Administrador).
 - Registro de **entrada**: valida placa, mensualidad vigente y que el vehículo no esté ya dentro; asigna celda libre del tipo correcto (automática o elegida).
 - Registro de **salida**: cierra el movimiento abierto y libera la celda.
-- Panel de ocupación de celdas, listado de vehículos dentro e historial de movimientos con filtros (solo Administrador).
+- Panel de ocupación de celdas (80 celdas: 70 de carro C-01..C-70 y 10 de moto M-01..M-10), listado de vehículos dentro e historial de movimientos con filtros (solo Administrador).
 
 > Los clientes, vehículos y mensualidades llegan por datos de ejemplo (`flask seed`). Su gestión completa (CRUD) y los pagos corresponden a las siguientes iteraciones.
 
@@ -62,7 +62,23 @@ Placas de ejemplo: `ABC123`, `DEF456` (carros con mensualidad), `MNO12A`, `PQR34
 ```bash
 python -m pytest -q
 ```
-Las pruebas usan SQLite en memoria, no necesitan MySQL.
+Por defecto usan SQLite (en memoria y en un archivo temporal), así que no necesitan MySQL.
+
+### Pruebas de concurrencia sobre MySQL
+
+`tests/test_concurrencia.py` lanza varios hilos a la vez (varios operarios) para comprobar que
+nunca queden dos movimientos abiertos del mismo vehículo o de la misma celda. Para correrlas
+sobre MySQL, el motor real del proyecto:
+
+1. En MySQL Workbench crea una base de pruebas: `CREATE DATABASE autos_colombia_test;`
+2. En la terminal (Windows):
+   ```
+   set TEST_DATABASE_URL=mysql+pymysql://root:CLAVE@localhost:3306/autos_colombia_test?charset=utf8mb4
+   python -m pytest tests/test_concurrencia.py -v
+   ```
+
+La base debe terminar en `_test`: la prueba borra y recrea sus tablas y se niega a correr contra
+otra (así nunca toca `autos_colombia`).
 
 ## Publicar en GitHub
 
@@ -71,6 +87,6 @@ git init
 git add .
 git commit -m "Iteración 1: gestión de entrada y salida de vehículos"
 git branch -M main
-git remote add origin https://github.com/<su-usuario>/autos-colombia.git
+git remote add origin https://github.com/Im-Luis-SS/autos-colombia.git
 git push -u origin main
 ```

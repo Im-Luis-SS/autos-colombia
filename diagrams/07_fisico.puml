@@ -64,7 +64,8 @@ entity "movimiento" as movimiento {
   --
   fecha_hora_entrada : DATETIME NOT NULL
   fecha_hora_salida : DATETIME NULL
-  observaciones : VARCHAR(255)
+  observaciones_entrada : VARCHAR(255)
+  observaciones_salida : VARCHAR(255)
   # id_vehiculo : INT UNSIGNED NOT NULL <<FK>>
   # id_celda : INT UNSIGNED NOT NULL <<FK>>
   # id_usuario_entrada : INT UNSIGNED NOT NULL <<FK>>

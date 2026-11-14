@@ -48,7 +48,8 @@ entity "MOVIMIENTO" as movimiento {
   --
   fecha_hora_entrada
   fecha_hora_salida
-  observaciones
+  observaciones_entrada
+  observaciones_salida
 }
 
 entity "USUARIO_SISTEMA" as usuario {

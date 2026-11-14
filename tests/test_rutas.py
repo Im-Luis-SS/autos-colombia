@@ -36,6 +36,24 @@ def test_flujo_entrada_y_salida(client):
     assert r.status_code == 400
 
 
+def test_nota_demasiado_larga_muestra_error_y_no_registra(client):
+    iniciar_sesion(client)
+    r = client.post("/entrada", data={"placa": "ABC123", "observaciones": "x" * 300})
+    assert r.status_code == 400
+    assert "no pueden superar 255" in r.get_data(as_text=True)
+    assert "No hay vehículos dentro del parqueadero" in client.get("/dentro").get_data(as_text=True)
+
+
+def test_historial_muestra_notas_de_entrada_y_salida(client):
+    iniciar_sesion(client)
+    client.post("/entrada", data={"placa": "ABC123", "observaciones": "Rayón en puerta"})
+    client.post("/salida", data={"placa": "ABC123", "observaciones": "Golpe en parachoques"})
+    client.post("/logout")
+    iniciar_sesion(client, "admin", "admin123")
+    html = client.get("/historial").get_data(as_text=True)
+    assert "Rayón en puerta" in html and "Golpe en parachoques" in html
+
+
 def test_historial_solo_admin(client):
     iniciar_sesion(client)  # operario
     r = client.get("/historial", follow_redirects=True)

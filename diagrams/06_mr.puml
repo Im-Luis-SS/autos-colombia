@@ -64,7 +64,8 @@ entity "movimiento" as movimiento {
   --
   fecha_hora_entrada
   fecha_hora_salida
-  observaciones
+  observaciones_entrada
+  observaciones_salida
   # id_vehiculo <<FK>>
   # id_celda <<FK>>
   # id_usuario_entrada <<FK>>

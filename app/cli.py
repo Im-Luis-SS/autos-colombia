@@ -11,6 +11,10 @@ from app.extensions import db
 from app.models import Celda, Cliente, Mensualidad, UsuarioSistema, Vehiculo
 
 
+CELDAS_CARRO = 70
+CELDAS_MOTO = 10
+
+
 def cargar_datos_ejemplo():
     """Inserta usuarios, clientes, vehículos, mensualidades y celdas de demostración."""
     if UsuarioSistema.query.first():
@@ -52,11 +56,11 @@ def cargar_datos_ejemplo():
             )
             db.session.add(vehiculo)
 
-    for i in range(1, 11):
+    # 80 celdas: 70 para carros (C-01..C-70) y 10 para motos (M-01..M-10), todas libres.
+    for i in range(1, CELDAS_CARRO + 1):
         db.session.add(Celda(codigo=f"C-{i:02d}", tipo="CARRO", estado="LIBRE"))
-    for i in range(1, 6):
+    for i in range(1, CELDAS_MOTO + 1):
         db.session.add(Celda(codigo=f"M-{i:02d}", tipo="MOTO", estado="LIBRE"))
-    db.session.add(Celda(codigo="C-11", tipo="CARRO", estado="MANTENIMIENTO"))
 
     db.session.commit()
     return True

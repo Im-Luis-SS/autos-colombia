@@ -16,6 +16,7 @@ from app.models import (
 )
 
 PATRON_PLACA = re.compile(r"^[A-Z0-9]{5,7}$")
+LIMITE_OBSERVACIONES = 255  # tamaño de cada columna de observaciones en la BD
 
 
 def normalizar_placa(placa: str) -> str:
@@ -107,9 +108,22 @@ class MovimientoService:
             )
         return celda
 
+    @staticmethod
+    def _validar_nota(texto, momento: str):
+        """Devuelve la nota limpia (o None si está vacía). Si excede el límite, la rechaza
+        en vez de recortarla: nunca se pierde información sin avisar."""
+        nota = (texto or "").strip()
+        if len(nota) > LIMITE_OBSERVACIONES:
+            raise ReglaNegocioError(
+                f"Las observaciones de {momento} no pueden superar {LIMITE_OBSERVACIONES} caracteres "
+                f"(tiene {len(nota)})."
+            )
+        return nota or None
+
     # ---------- casos de uso ----------
     @classmethod
     def registrar_entrada(cls, placa, operario, observaciones=None, celda_codigo=None) -> Movimiento:
+        nota = cls._validar_nota(observaciones, "entrada")
         vehiculo = cls._obtener_vehiculo(placa)
         momento = ahora()
         cls._validar_mensualidad(vehiculo, momento.date())
@@ -122,7 +136,7 @@ class MovimientoService:
             celda=celda,
             usuario_entrada=operario,
             fecha_hora_entrada=momento,
-            observaciones=(observaciones or "").strip()[:255] or None,
+            observaciones_entrada=nota,
         )
         celda.ocupar()
         db.session.add(movimiento)
@@ -139,6 +153,7 @@ class MovimientoService:
 
     @classmethod
     def registrar_salida(cls, placa, operario, observaciones=None) -> Movimiento:
+        nota = cls._validar_nota(observaciones, "salida")
         vehiculo = cls._obtener_vehiculo(placa)
         movimiento = cls._movimiento_abierto(vehiculo)
         if movimiento is None:
@@ -147,11 +162,7 @@ class MovimientoService:
             )
         movimiento.registrar_salida(operario, ahora())
         movimiento.celda.liberar()
-        nota = (observaciones or "").strip()
-        if nota:
-            previa = movimiento.observaciones
-            combinado = f"{previa} | Salida: {nota}" if previa else f"Salida: {nota}"
-            movimiento.observaciones = combinado[:255]
+        movimiento.observaciones_salida = nota  # campo propio: no toca la nota de entrada
         db.session.commit()
         return movimiento
 

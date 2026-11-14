@@ -81,7 +81,8 @@ package "Modelos (dominio)" {
     - id : int
     - fechaHoraEntrada : datetime
     - fechaHoraSalida : datetime
-    - observaciones : str
+    - observacionesEntrada : str
+    - observacionesSalida : str
     + estaAbierto() : bool
     + registrarSalida(operario, fechaHora) : void
     + duracion() : timedelta

@@ -31,7 +31,8 @@ def test_entrada_asigna_celda_libre_del_tipo(app, operario):
     assert mov.celda.estado == "OCUPADA"
     assert mov.celda.codigo == "C-01"  # primera libre por código
     assert mov.usuario_entrada.username == "operario"
-    assert mov.observaciones == "Sin novedad"
+    assert mov.observaciones_entrada == "Sin novedad"
+    assert mov.observaciones_salida is None
     assert mov.esta_abierto()
 
 
@@ -70,6 +71,8 @@ def test_celda_elegida_invalida(app, operario):
         MovimientoService.registrar_entrada("ABC123", operario, celda_codigo="X-99")
     with pytest.raises(ReglaNegocioError, match="es para"):
         MovimientoService.registrar_entrada("ABC123", operario, celda_codigo="M-01")
+    Celda.query.filter_by(codigo="C-11").update({"estado": "MANTENIMIENTO"})
+    db.session.commit()
     with pytest.raises(ReglaNegocioError, match="no está libre"):
         MovimientoService.registrar_entrada("ABC123", operario, celda_codigo="C-11")  # mantenimiento
 
@@ -88,7 +91,8 @@ def test_salida_libera_celda_y_registra_datos(app, operario):
     assert salida.fecha_hora_salida is not None
     assert salida.usuario_salida.username == "operario"
     assert celda.estado == "LIBRE"
-    assert "Rayón puerta" in salida.observaciones and "Salida: Todo bien" in salida.observaciones
+    assert salida.observaciones_entrada == "Rayón puerta"
+    assert salida.observaciones_salida == "Todo bien"
     assert not salida.esta_abierto()
 
 
@@ -118,12 +122,51 @@ def test_consultas_dentro_e_historial(app, operario):
 
 
 def test_resumen_ocupacion(app, operario):
+    Celda.query.filter_by(codigo="C-70").update({"estado": "MANTENIMIENTO"})
+    db.session.commit()
     MovimientoService.registrar_entrada("ABC123", operario)
     r = OcupacionService.resumen()
+    assert r["TOTAL"]["total"] == 80          # 70 de carro + 10 de moto
+    assert r["CARRO"]["total"] == 70 and r["MOTO"]["total"] == 10
     assert r["CARRO"]["ocupadas"] == 1
     assert r["CARRO"]["mantenimiento"] == 1
-    assert r["TOTAL"]["total"] == 16
-    assert r["MOTO"]["libres"] == 5
+    assert r["CARRO"]["libres"] == 68
+    assert r["MOTO"]["libres"] == 10
+
+
+# ---------- Corrección HU-03: las observaciones de entrada y salida se conservan ----------
+def test_salida_conserva_ambas_notas_aunque_la_de_entrada_ocupe_el_maximo(app, operario):
+    """Caso reportado en la retroalimentación: entrada de 255 caracteres + nota de salida."""
+    nota_entrada = "E" * 255
+    nota_salida = "S" * 255
+    MovimientoService.registrar_entrada("ABC123", operario, nota_entrada)
+    mov = MovimientoService.registrar_salida("ABC123", operario, nota_salida)
+    db.session.expire_all()  # releer desde la BD, no desde memoria
+    guardado = db.session.get(Movimiento, mov.id_movimiento)
+    assert guardado.observaciones_entrada == nota_entrada
+    assert guardado.observaciones_salida == nota_salida
+
+
+def test_salida_sin_nota_no_altera_la_de_entrada(app, operario):
+    MovimientoService.registrar_entrada("ABC123", operario, "Rayón puerta")
+    mov = MovimientoService.registrar_salida("ABC123", operario)
+    assert mov.observaciones_entrada == "Rayón puerta"
+    assert mov.observaciones_salida is None
+
+
+def test_nota_demasiado_larga_se_rechaza_en_vez_de_recortarse(app, operario):
+    with pytest.raises(ReglaNegocioError, match="no pueden superar 255"):
+        MovimientoService.registrar_entrada("ABC123", operario, "x" * 256)
+    # No quedó nada a medias: ni movimiento ni celda ocupada.
+    assert Movimiento.query.count() == 0
+    assert Celda.query.filter_by(estado="OCUPADA").count() == 0
+
+    MovimientoService.registrar_entrada("ABC123", operario, "ok")
+    with pytest.raises(ReglaNegocioError, match="no pueden superar 255"):
+        MovimientoService.registrar_salida("ABC123", operario, "y" * 256)
+    # La salida no se registró: el vehículo sigue dentro y la celda ocupada.
+    assert MovimientoService.vehiculos_en_parqueadero()[0].vehiculo.placa == "ABC123"
+    assert Celda.query.filter_by(estado="OCUPADA").count() == 1
 
 
 def test_bd_impide_dos_movimientos_abiertos_del_mismo_vehiculo(app, operario):
