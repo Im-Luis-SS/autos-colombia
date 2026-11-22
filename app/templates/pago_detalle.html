@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block titulo %}Comprobante {{ pago.numero }}{% endblock %}
+{% block contenido %}
+{% set v = pago.mensualidad.vehiculo %}
+{% set m = pago.mensualidad %}
+<div class="encabezado-pagina no-imprimir">
+  <h1>Comprobante de pago</h1>
+  <div class="acciones">
+    <button class="boton secundario" type="button" onclick="window.print()">Imprimir</button>
+    <a class="boton secundario" href="{{ url_for('pagos.lista') }}">Volver a pagos</a>
+  </div>
+</div>
+<div class="tarjeta comprobante">
+  <div class="comprobante-cab">
+    <div><strong>Autos Colombia</strong><br><small>Parqueadero por mensualidad</small></div>
+    <div class="comprobante-num">{{ pago.numero }}<br><span class="chip {{ 'inactivo' if pago.esta_anulado() else 'activo' }}">{{ pago.estado.title() }}</span></div>
+  </div>
+  <table class="datos">
+    <tr><th>Fecha y hora</th><td>{{ pago.fecha_hora.strftime('%d/%m/%Y %H:%M') }}</td></tr>
+    <tr><th>Cliente</th><td>{{ v.cliente.nombre_completo }} ({{ v.cliente.tipo_documento }} {{ v.cliente.numero_documento }})</td></tr>
+    <tr><th>Vehículo</th><td><span class="placa-tag">{{ v.placa }}</span> {{ v.tipo.title() }}</td></tr>
+    <tr><th>Mensualidad</th><td>{{ m.fecha_inicio.strftime('%d/%m/%Y') }} al {{ m.fecha_fin.strftime('%d/%m/%Y') }} ({{ m.estado.title() }})</td></tr>
+    <tr><th>Medio de pago</th><td>{{ pago.medio.title() }}{% if pago.referencia %} · Ref. {{ pago.referencia }}{% endif %}</td></tr>
+    <tr><th>Valor</th><td class="valor-cobro">{{ pago.valor | pesos }}</td></tr>
+    <tr><th>Registrado por</th><td>{{ pago.usuario.nombre }}</td></tr>
+    {% if pago.esta_anulado() %}
+    <tr class="fila-anulado"><th>Anulado</th><td>{{ pago.fecha_hora_anulacion.strftime('%d/%m/%Y %H:%M') }} por {{ pago.usuario_anulo.nombre }}<br><strong>Motivo:</strong> {{ pago.motivo_anulacion }}</td></tr>
+    {% endif %}
+  </table>
+</div>
+{% if not pago.esta_anulado() %}
+<form method="post" action="{{ url_for('pagos.anular', id_pago=pago.id_pago) }}" class="tarjeta no-imprimir" style="max-width:640px;"
+      onsubmit="return confirm('¿Anular el pago {{ pago.numero }}? La mensualidad quedará cancelada.');">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <h2 style="margin-top:0;">Anular este pago</h2>
+  <label for="motivo">Motivo de la anulación</label>
+  <textarea id="motivo" name="motivo" rows="2" maxlength="255" placeholder="Ej. Pago registrado por error" required>{{ motivo or '' }}</textarea>
+  <div class="acciones" style="margin-top:12px;"><button class="boton peligro" type="submit">Anular pago</button></div>
+</form>
+{% endif %}
+{% endblock %}

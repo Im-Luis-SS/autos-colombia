@@ -108,19 +108,3 @@ def vehiculo_editar(id_vehiculo):
         return redirect(url_for("clientes.detalle", id_cliente=cliente.id_cliente))
     form = {"placa": vehiculo.placa, "tipo": vehiculo.tipo, "marca": vehiculo.marca or "", "color": vehiculo.color or ""}
     return render_template("vehiculo_form.html", form=form, cliente=cliente, vehiculo=vehiculo, tipos=TIPOS_VEHICULO)
-
-
-@clientes_bp.route("/vehiculos/<int:id_vehiculo>/mensualidad", methods=["POST"])
-@admin_requerido
-def activar_mensualidad(id_vehiculo):
-    vehiculo = _vehiculo(id_vehiculo)
-    try:
-        m = ClienteService.activar_mensualidad(id_vehiculo)
-    except ReglaNegocioError as error:
-        flash(str(error), "danger")
-    else:
-        flash(
-            f"Mensualidad activada para {vehiculo.placa}: {m.fecha_inicio:%d/%m/%Y} al {m.fecha_fin:%d/%m/%Y}.",
-            "success",
-        )
-    return redirect(url_for("clientes.detalle", id_cliente=vehiculo.id_cliente))

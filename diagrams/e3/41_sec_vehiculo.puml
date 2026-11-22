@@ -1,0 +1,46 @@
+@startuml
+skinparam shadowing false
+skinparam defaultFontName Liberation Sans
+skinparam defaultFontSize 12
+skinparam sequence {
+  ParticipantBackgroundColor #E8F0FB
+  ParticipantBorderColor #1F3A5F
+  LifeLineBorderColor #1F3A5F
+  ArrowColor #1F3A5F
+  GroupBackgroundColor #F5F7FA
+}
+skinparam NoteBackgroundColor #FFF6E0
+skinparam NoteBorderColor #E8A317
+title Secuencia 10 – Registrar vehículo de un cliente (iteración 2)
+actor Administrador
+participant "Navegador" as UI
+participant "clientes_bp" as R
+participant "ClienteService" as S
+database "MySQL" as DB
+
+Administrador -> UI : en el detalle del cliente pulsa «Agregar vehículo»
+UI -> R : POST /clientes/{id}/vehiculos/nuevo (csrf_token)
+R -> R : admin_requerido
+R -> S : registrar_vehiculo(id_cliente, placa, tipo, marca, color)
+S -> DB : SELECT cliente WHERE id = ?
+alt el cliente no existe
+  S --> R : NoEncontradoError
+  R --> UI : 404
+else existe
+  alt placa mal formada, tipo inválido o marca/color demasiado largos
+    S --> R : ReglaNegocioError
+  else datos válidos
+    S -> DB : SELECT vehículo WHERE placa = ?
+    alt la placa ya está registrada
+      S --> R : ReglaNegocioError «La placa … ya está registrada»
+    else placa nueva
+      S -> DB : INSERT vehículo (sin mensualidad)
+      DB --> S : commit
+      S --> R : vehículo
+      R --> UI : redirect al detalle «Vehículo … registrado»
+      note right of R : la mensualidad no se activa aquí:\nse activa al registrar su pago\n(secuencia 16)
+    end
+  end
+end
+R --> UI : (si hubo ReglaNegocioError) 400 + mensaje
+@enduml

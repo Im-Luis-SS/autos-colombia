@@ -1,0 +1,43 @@
+@startuml
+skinparam shadowing false
+skinparam defaultFontName Liberation Sans
+skinparam defaultFontSize 12
+skinparam sequence {
+  ParticipantBackgroundColor #E8F0FB
+  ParticipantBorderColor #1F3A5F
+  LifeLineBorderColor #1F3A5F
+  ArrowColor #1F3A5F
+  GroupBackgroundColor #F5F7FA
+}
+skinparam NoteBackgroundColor #FFF6E0
+skinparam NoteBorderColor #E8A317
+title Secuencia 1 – Iniciar sesión (iteración 1)
+actor Usuario
+participant "Navegador" as UI
+participant "auth_bp" as R
+participant "AuthService" as S
+database "MySQL" as DB
+
+Usuario -> UI : escribe usuario y contraseña
+UI -> R : POST /login (csrf_token)
+alt falta la ficha CSRF o no coincide
+  R --> UI : 400 «La solicitud no es válida…»
+else ficha válida
+  R -> S : autenticar(username, clave)
+  alt falta usuario o contraseña
+    S --> R : ReglaNegocioError «Ingrese usuario y contraseña»
+    R --> UI : muestra el login con el mensaje
+  else hay datos
+    S -> DB : SELECT usuario WHERE username = ?
+    alt no existe, está inactivo o la contraseña no coincide
+      S --> R : ReglaNegocioError «Usuario o contraseña incorrectos»
+      note right of S : mensaje genérico: no revela\nsi el usuario existe
+      R --> UI : muestra el login con el mensaje
+    else credenciales válidas
+      S --> R : usuario
+      R -> R : session.clear() y guarda id_usuario
+      R --> UI : redirect al panel de ocupación
+    end
+  end
+end
+@enduml

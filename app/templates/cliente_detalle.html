@@ -28,10 +28,7 @@
     <td class="acciones">
       <a class="boton peq secundario" href="{{ url_for('clientes.vehiculo_editar', id_vehiculo=v.id_vehiculo) }}">Editar</a>
       {% if not m %}
-      <form method="post" action="{{ url_for('clientes.activar_mensualidad', id_vehiculo=v.id_vehiculo) }}">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <button class="boton peq" type="submit">Activar mensualidad ({{ dias }} días)</button>
-      </form>
+      <a class="boton peq" href="{{ url_for('pagos.nuevo', vehiculo=v.id_vehiculo) }}">Registrar pago ({{ dias }} días)</a>
       {% endif %}
     </td>
   </tr>

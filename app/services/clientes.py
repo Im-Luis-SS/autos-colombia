@@ -147,9 +147,11 @@ class ClienteService:
 
     # ------------------------------------------------------------ mensualidad
     @classmethod
-    def activar_mensualidad(cls, id_vehiculo, hoy: date = None) -> Mensualidad:
-        """Activa una mensualidad de 30 días desde hoy. Solo puede haber una vigente."""
-        vehiculo = cls.obtener_vehiculo(id_vehiculo)
+    def preparar_mensualidad(cls, vehiculo: Vehiculo, hoy: date = None) -> Mensualidad:
+        """Crea (sin confirmar) la mensualidad de 30 días desde hoy. Solo puede haber una vigente.
+
+        La confirma quien la llama: el pago la guarda junto con su registro de pago.
+        """
         hoy = hoy or ahora().date()
 
         # Las ACTIVAS ya caducadas pasan a VENCIDA para liberar el cupo de «una sola activa».
@@ -173,6 +175,14 @@ class ClienteService:
             vehiculo=vehiculo,
         )
         db.session.add(nueva)
+        return nueva
+
+    @classmethod
+    def activar_mensualidad(cls, id_vehiculo, hoy: date = None) -> Mensualidad:
+        """Activa la mensualidad sin cobro. Uso interno y de pruebas: en la aplicación, la
+        mensualidad solo se activa registrando su pago (PagoService.registrar)."""
+        vehiculo = cls.obtener_vehiculo(id_vehiculo)
+        nueva = cls.preparar_mensualidad(vehiculo, hoy)
         try:
             db.session.commit()
         except IntegrityError:

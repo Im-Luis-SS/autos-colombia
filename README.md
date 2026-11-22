@@ -1,6 +1,6 @@
 # Autos Colombia – Sistema de información del parqueadero
 
-**Iteración 1: entrada y salida de vehículos. Iteración 2: gestión de usuarios, clientes/vehículos/mensualidad y celdas.**
+**Iteración 1: entrada y salida. Iteración 2: usuarios, clientes/vehículos y celdas. Iteración 3: gestión de pagos.**
 Aplicación web hecha con Python 3, Flask y MySQL.
 
 ## Qué hace esta iteración
@@ -13,11 +13,16 @@ Aplicación web hecha con Python 3, Flask y MySQL.
 ## Qué agrega la iteración 2 (solo Administrador)
 
 - **Usuarios:** crear, editar, activar/desactivar y restablecer contraseña (siempre queda un administrador activo).
-- **Clientes y vehículos:** registrar, buscar y editar; **mensualidad única de 30 días** por vehículo.
-- **Celdas:** crear, editar, poner en mantenimiento/habilitar y eliminar (si no tienen historial).
+- **Clientes y vehículos:** registrar, buscar y editar.
+- **Celdas:** crear, editar, poner en mantenimiento/habilitar y eliminar (si no tienen historial). Las celdas en mantenimiento no se asignan en las entradas.
 - Protección CSRF en todos los formularios.
 
-> Los pagos corresponden a la siguiente iteración.
+## Qué agrega la iteración 3 (solo Administrador)
+
+- **Tarifas:** valor de la mensualidad por tipo de vehículo (carro y moto), editable.
+- **Pagos:** registrar el pago de una mensualidad (efectivo, transferencia o tarjeta, con referencia). **Pagar activa la mensualidad de 30 días**; no hay mensualidad sin pago.
+- **Consultar pagos** con filtros (placa, documento, apellido, medio, estado, fechas) y total recaudado.
+- **Comprobante** imprimible y **anulación** de pagos con motivo (cancela la mensualidad).
 
 ## Estructura
 
@@ -62,7 +67,7 @@ run.py         punto de entrada
 | admin | admin123 | Administrador |
 | operario | operario123 | Operario |
 
-Placas de ejemplo: `ABC123`, `DEF456` (carros con mensualidad), `MNO12A`, `PQR34B` (motos), `GHI789` (mensualidad vencida → se rechaza).
+Placas de ejemplo: `ABC123`, `DEF456` (carros con mensualidad), `MNO12A`, `PQR34B` (motos), `GHI789` (mensualidad vencida → se rechaza). Tarifas de ejemplo: carro $150.000 y moto $70.000.
 
 ## Pruebas
 
@@ -70,7 +75,6 @@ Placas de ejemplo: `ABC123`, `DEF456` (carros con mensualidad), `MNO12A`, `PQR34
 python -m pytest -q
 ```
 Por defecto usan SQLite (en memoria y en un archivo temporal), así que no necesitan MySQL.
-Para correr **todas** las pruebas sobre MySQL, defina `TEST_DATABASE_URL` (ver abajo) y ejecute `python -m pytest -q`.
 
 ### Pruebas de concurrencia sobre MySQL
 
@@ -87,3 +91,14 @@ sobre MySQL, el motor real del proyecto:
 
 La base debe terminar en `_test`: la prueba borra y recrea sus tablas y se niega a correr contra
 otra (así nunca toca `autos_colombia`).
+
+## Publicar en GitHub
+
+```bash
+git init
+git add .
+git commit -m "Iteración 1: gestión de entrada y salida de vehículos"
+git branch -M main
+git remote add origin https://github.com/Im-Luis-SS/autos-colombia.git
+git push -u origin main
+```

@@ -3,16 +3,19 @@
     flask --app run init-db
     flask --app run seed
 """
-from datetime import date, timedelta
+from datetime import date, datetime, time, timedelta
 
 import click
 
 from app.extensions import db
-from app.models import Celda, Cliente, Mensualidad, UsuarioSistema, Vehiculo
+from app.models import Celda, Cliente, Mensualidad, Pago, Tarifa, UsuarioSistema, Vehiculo
 
 
 CELDAS_CARRO = 70
 CELDAS_MOTO = 10
+
+
+TARIFAS_EJEMPLO = {"CARRO": 150_000, "MOTO": 70_000}
 
 
 def cargar_datos_ejemplo():
@@ -39,6 +42,9 @@ def cargar_datos_ejemplo():
         ("1098765432", "Julián", "Ramírez Cruz", "3157778899",
          [("PQR34B", "MOTO", "Honda CB125", "Azul", "ACTIVA", -2, 28)]),
     ]
+    n_pago = 0
+    for tipo, valor in TARIFAS_EJEMPLO.items():
+        db.session.add(Tarifa(tipo_vehiculo=tipo, valor=valor))
     for doc, nombres, apellidos, tel, vehiculos in datos:
         cliente = Cliente(
             tipo_documento="CC", numero_documento=doc, nombres=nombres,
@@ -47,14 +53,27 @@ def cargar_datos_ejemplo():
         db.session.add(cliente)
         for placa, tipo, marca, color, estado, ini, fin in vehiculos:
             vehiculo = Vehiculo(placa=placa, tipo=tipo, marca=marca, color=color, cliente=cliente)
-            vehiculo.mensualidades.append(
-                Mensualidad(
-                    fecha_inicio=hoy + timedelta(days=ini),
-                    fecha_fin=hoy + timedelta(days=fin),
-                    estado=estado,
+            mensualidad = Mensualidad(
+                fecha_inicio=hoy + timedelta(days=ini),
+                fecha_fin=hoy + timedelta(days=fin),
+                estado=estado,
+            )
+            vehiculo.mensualidades.append(mensualidad)
+            db.session.add(vehiculo)
+            # Cada mensualidad de ejemplo ya tiene su pago (efectivo o transferencia).
+            n_pago += 1
+            transferencia = n_pago % 2 == 0
+            db.session.add(
+                Pago(
+                    mensualidad=mensualidad,
+                    valor=TARIFAS_EJEMPLO[tipo],
+                    medio="TRANSFERENCIA" if transferencia else "EFECTIVO",
+                    referencia=f"TRF-{1000 + n_pago}" if transferencia else None,
+                    fecha_hora=datetime.combine(mensualidad.fecha_inicio, time(9, 0)),
+                    estado="REGISTRADO",
+                    usuario=admin,
                 )
             )
-            db.session.add(vehiculo)
 
     # 80 celdas: 70 para carros (C-01..C-70) y 10 para motos (M-01..M-10), todas libres.
     for i in range(1, CELDAS_CARRO + 1):

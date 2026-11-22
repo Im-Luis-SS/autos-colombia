@@ -1,0 +1,52 @@
+@startuml
+left to right direction
+skinparam shadowing false
+skinparam defaultFontName Liberation Sans
+skinparam actorStyle awesome
+skinparam usecase {
+  BackgroundColor #E8F0FB
+  BorderColor #1F3A5F
+}
+skinparam rectangle {
+  BackgroundColor #FFFFFF
+  BorderColor #1F3A5F
+}
+title Casos de uso – Gestión de pagos (iteración 3)
+
+actor Administrador as ADM
+
+rectangle "Sistema Autos Colombia" {
+  usecase "Iniciar sesión" as UC0
+  package "Tarifas" {
+    usecase "Consultar tarifas (HU-21)" as UC21
+    usecase "Editar tarifa (HU-22)" as UC22
+  }
+  package "Pagos" {
+    usecase "Registrar pago de mensualidad (HU-23)" as UC23
+    usecase "Consultar pagos (HU-24)" as UC24
+    usecase "Ver e imprimir comprobante (HU-25)" as UC25
+    usecase "Anular pago (HU-26)" as UC26
+  }
+  usecase "Activar mensualidad de 30 días" as UCA
+  usecase "Calcular el valor con la tarifa del tipo" as UCT
+  usecase "Cancelar la mensualidad del pago" as UCC
+}
+ADM --> UC0
+ADM --> UC21
+ADM --> UC22
+ADM --> UC23
+ADM --> UC24
+ADM --> UC25
+ADM --> UC26
+UC23 ..> UCA : <<include>>
+UC23 ..> UCT : <<include>>
+UCT ..> UC21 : <<include>>
+UC25 ..> UC24 : <<extend>>
+UC26 ..> UC25 : <<extend>>
+UC26 ..> UCC : <<include>>
+note bottom of UC23
+  El pago activa la mensualidad.
+  El vehículo y el cliente ya existen
+  (se registran antes, iteración 2).
+end note
+@enduml

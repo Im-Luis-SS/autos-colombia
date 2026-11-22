@@ -354,10 +354,11 @@ def test_cp32_flujo_completo_por_pantallas(client):
     assert "Vehículo RST456 registrado" in r.get_data(as_text=True)
     from app.models import Vehiculo
     id_veh = Vehiculo.query.filter_by(placa="RST456").first().id_vehiculo
-    r = client.post(f"/vehiculos/{id_veh}/mensualidad", follow_redirects=True)
-    assert "Mensualidad activada para RST456" in r.get_data(as_text=True)
-    r = client.post(f"/vehiculos/{id_veh}/mensualidad", follow_redirects=True)
-    assert "ya tiene una mensualidad vigente" in r.get_data(as_text=True)
+    # Desde la iteración 3 la mensualidad se activa registrando su pago.
+    r = client.post("/pagos/nuevo", data={"id_vehiculo": id_veh, "medio": "EFECTIVO"}, follow_redirects=True)
+    assert "Mensualidad de RST456 activa" in r.get_data(as_text=True)
+    r = client.post("/pagos/nuevo", data={"id_vehiculo": id_veh, "medio": "EFECTIVO"})
+    assert r.status_code == 400 and "ya tiene una mensualidad vigente" in r.get_data(as_text=True)
     r = client.post("/celdas/nueva", data={"codigo": "c-71", "tipo": "carro".upper()}, follow_redirects=True)
     assert "Celda C-71 creada" in r.get_data(as_text=True)
     client.post("/logout")

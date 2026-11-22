@@ -1,0 +1,39 @@
+@startuml
+skinparam shadowing false
+skinparam defaultFontName Liberation Sans
+skinparam defaultFontSize 12
+skinparam sequence {
+  ParticipantBackgroundColor #E8F0FB
+  ParticipantBorderColor #1F3A5F
+  LifeLineBorderColor #1F3A5F
+  ArrowColor #1F3A5F
+  GroupBackgroundColor #F5F7FA
+}
+skinparam NoteBackgroundColor #FFF6E0
+skinparam NoteBorderColor #E8A317
+title Secuencia 9 – Registrar cliente (iteración 2)
+actor Administrador
+participant "Navegador" as UI
+participant "clientes_bp" as R
+participant "ClienteService" as S
+database "MySQL" as DB
+
+Administrador -> UI : llena documento, nombres, apellidos y contacto
+UI -> R : POST /clientes/nuevo (csrf_token)
+R -> R : admin_requerido
+R -> S : crear(tipo_doc, número, nombres, apellidos, teléfono, correo)
+alt tipo de documento, número, nombres, apellidos, teléfono o correo inválidos
+  S --> R : ReglaNegocioError
+else datos válidos
+  S -> DB : SELECT cliente WHERE tipo y número de documento
+  alt ya existe un cliente con ese documento
+    S --> R : ReglaNegocioError «Ya existe un cliente con el documento…»
+  else documento nuevo
+    S -> DB : INSERT cliente
+    DB --> S : commit
+    S --> R : cliente
+    R --> UI : redirect al detalle del cliente «Cliente … registrado»
+  end
+end
+R --> UI : (si hubo ReglaNegocioError) 400 + mensaje, conserva lo escrito
+@enduml

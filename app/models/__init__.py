@@ -17,6 +17,8 @@ TIPOS_VEHICULO = ("CARRO", "MOTO")
 ESTADOS_CELDA = ("LIBRE", "OCUPADA", "MANTENIMIENTO")
 ESTADOS_MENSUALIDAD = ("ACTIVA", "VENCIDA", "CANCELADA")
 TIPOS_DOCUMENTO = ("CC", "CE", "NIT", "PAS")
+MEDIOS_PAGO = ("EFECTIVO", "TRANSFERENCIA", "TARJETA")
+ESTADOS_PAGO = ("REGISTRADO", "ANULADO")
 
 
 class UsuarioSistema(db.Model):
@@ -100,6 +102,7 @@ class Mensualidad(db.Model):
     __table_args__ = (db.Index("uq_mensualidad_activa", "mensualidad_activa", unique=True),)
 
     vehiculo = db.relationship("Vehiculo", back_populates="mensualidades")
+    pago = db.relationship("Pago", back_populates="mensualidad", uselist=False)
 
     def esta_vigente(self, fecha: date) -> bool:
         return self.estado == "ACTIVA" and self.fecha_inicio <= fecha <= self.fecha_fin
@@ -173,3 +176,50 @@ class Movimiento(db.Model):
     def duracion(self):
         fin = self.fecha_hora_salida or ahora()
         return fin - self.fecha_hora_entrada
+
+
+class Tarifa(db.Model):
+    """Valor de la mensualidad (en pesos) para cada tipo de vehículo."""
+
+    __tablename__ = "tarifa"
+
+    id_tarifa = db.Column(db.Integer, primary_key=True)
+    tipo_vehiculo = db.Column(
+        db.Enum(*TIPOS_VEHICULO, name="tipo_tarifa"), nullable=False, unique=True
+    )
+    valor = db.Column(db.Integer, nullable=False)
+
+
+class Pago(db.Model):
+    """Pago de una mensualidad. Guarda el valor cobrado en ese momento (no cambia si la tarifa cambia)."""
+
+    __tablename__ = "pago"
+
+    id_pago = db.Column(db.Integer, primary_key=True)
+    id_mensualidad = db.Column(
+        db.Integer, db.ForeignKey("mensualidad.id_mensualidad"), nullable=False, unique=True
+    )
+    valor = db.Column(db.Integer, nullable=False)
+    medio = db.Column(db.Enum(*MEDIOS_PAGO, name="medio_pago"), nullable=False)
+    referencia = db.Column(db.String(40))
+    fecha_hora = db.Column(db.DateTime, nullable=False)
+    estado = db.Column(
+        db.Enum(*ESTADOS_PAGO, name="estado_pago"), nullable=False, default="REGISTRADO"
+    )
+    motivo_anulacion = db.Column(db.String(255))
+    fecha_hora_anulacion = db.Column(db.DateTime)
+    id_usuario = db.Column(db.Integer, db.ForeignKey("usuario_sistema.id_usuario"), nullable=False)
+    id_usuario_anulo = db.Column(db.Integer, db.ForeignKey("usuario_sistema.id_usuario"))
+
+    __table_args__ = (db.Index("ix_pago_fecha", "fecha_hora"),)
+
+    mensualidad = db.relationship("Mensualidad", back_populates="pago")
+    usuario = db.relationship("UsuarioSistema", foreign_keys=[id_usuario])
+    usuario_anulo = db.relationship("UsuarioSistema", foreign_keys=[id_usuario_anulo])
+
+    @property
+    def numero(self) -> str:
+        return f"P-{self.id_pago:06d}"
+
+    def esta_anulado(self) -> bool:
+        return self.estado == "ANULADO"

@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block titulo %}Pagos{% endblock %}
+{% block contenido %}
+<div class="encabezado-pagina">
+  <h1>Pagos de mensualidades</h1>
+  <a class="boton secundario" href="{{ url_for('tarifas.lista') }}">Ver tarifas</a>
+</div>
+<p class="sub">Para registrar un pago, abra el cliente en <a href="{{ url_for('clientes.lista') }}">Clientes</a> y use «Registrar pago» en su vehículo.</p>
+
+<form method="get" class="tarjeta fila-filtros">
+  <div><label for="q">Cliente o placa</label><input type="text" id="q" name="q" value="{{ q }}" placeholder="Documento, nombre o placa"></div>
+  <div><label for="desde">Desde</label><input type="date" id="desde" name="desde" value="{{ desde }}"></div>
+  <div><label for="hasta">Hasta</label><input type="date" id="hasta" name="hasta" value="{{ hasta }}"></div>
+  <div><label for="medio">Medio</label>
+    <select id="medio" name="medio"><option value="">Todos</option>
+    {% for m in medios %}<option value="{{ m }}" {{ 'selected' if m == medio }}>{{ m.title() }}</option>{% endfor %}</select></div>
+  <div><label for="estado">Estado</label>
+    <select id="estado" name="estado"><option value="">Todos</option>
+    {% for e in estados %}<option value="{{ e }}" {{ 'selected' if e == estado }}>{{ e.title() }}</option>{% endfor %}</select></div>
+  <button class="boton" type="submit">Filtrar</button>
+</form>
+
+<div class="tarjeta total-recaudado">
+  <span>Total recaudado con este filtro (sin pagos anulados)</span>
+  <strong>{{ total | pesos }}</strong>
+</div>
+
+<div class="tarjeta">
+  {% if pagina.items %}
+  <table>
+    <thead><tr><th>N.º</th><th>Fecha</th><th>Cliente</th><th>Placa</th><th>Medio</th><th>Valor</th><th>Estado</th><th></th></tr></thead>
+    <tbody>
+    {% for p in pagina.items %}
+      {% set v = p.mensualidad.vehiculo %}
+      <tr>
+        <td class="nowrap"><strong>{{ p.numero }}</strong></td>
+        <td>{{ p.fecha_hora.strftime('%d/%m/%Y %H:%M') }}</td>
+        <td>{{ v.cliente.nombre_completo }}</td>
+        <td><span class="placa-tag">{{ v.placa }}</span></td>
+        <td>{{ p.medio.title() }}</td>
+        <td>{{ p.valor | pesos }}</td>
+        <td><span class="chip {{ 'inactivo' if p.esta_anulado() else 'activo' }}">{{ p.estado.title() }}</span></td>
+        <td class="acciones"><a class="boton peq secundario" href="{{ url_for('pagos.detalle', id_pago=p.id_pago) }}">Comprobante</a></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  <div class="pag">
+    {% if pagina.has_prev %}<a href="{{ url_for('pagos.lista', q=q, medio=medio, estado=estado, desde=desde, hasta=hasta, pagina=pagina.prev_num) }}">← Anterior</a>{% endif %}
+    <span>Página {{ pagina.page }} de {{ pagina.pages }} · {{ pagina.total }} pagos</span>
+    {% if pagina.has_next %}<a href="{{ url_for('pagos.lista', q=q, medio=medio, estado=estado, desde=desde, hasta=hasta, pagina=pagina.next_num) }}">Siguiente →</a>{% endif %}
+  </div>
+  {% else %}
+  <div class="vacio">No hay pagos que coincidan con el filtro.</div>
+  {% endif %}
+</div>
+{% endblock %}

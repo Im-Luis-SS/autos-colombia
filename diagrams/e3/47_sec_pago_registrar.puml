@@ -1,0 +1,59 @@
+@startuml
+skinparam shadowing false
+skinparam defaultFontName Liberation Sans
+skinparam defaultFontSize 12
+skinparam sequence {
+  ParticipantBackgroundColor #E8F0FB
+  ParticipantBorderColor #1F3A5F
+  LifeLineBorderColor #1F3A5F
+  ArrowColor #1F3A5F
+  GroupBackgroundColor #F5F7FA
+}
+skinparam NoteBackgroundColor #FFF6E0
+skinparam NoteBorderColor #E8A317
+title Secuencia 16 – Registrar pago y activar mensualidad (iteración 3)
+actor Administrador
+participant "Navegador" as UI
+participant "pagos_bp" as R
+participant "PagoService" as S
+participant "ClienteService" as CS
+database "MySQL" as DB
+Administrador -> UI : en el detalle del cliente pulsa «Registrar pago»
+UI -> R : GET /pagos/nuevo?vehiculo={id}
+R --> UI : formulario con cliente, vehículo, valor de la tarifa y periodo de 30 días
+Administrador -> UI : elige el medio de pago (y la referencia si aplica)
+UI -> R : POST /pagos/nuevo (id_vehiculo, medio, referencia, csrf_token)
+R -> R : admin_requerido
+R -> S : registrar(id_vehiculo, medio, referencia, administrador)
+S -> DB : SELECT vehículo WHERE id = ?
+alt el vehículo no existe
+  S --> R : NoEncontradoError
+  R --> UI : 404
+else existe
+  alt medio no válido, o transferencia/tarjeta sin referencia válida
+    S --> R : ReglaNegocioError
+  else medio y referencia válidos
+    S -> DB : SELECT tarifa del tipo de vehículo
+    S -> CS : preparar_mensualidad(vehículo)
+    CS -> DB : pasa a VENCIDA las ACTIVAS caducadas
+    alt el vehículo ya tiene una mensualidad vigente
+      CS -> DB : rollback
+      CS --> S : ReglaNegocioError «ya tiene una mensualidad vigente hasta…»
+      S --> R : ReglaNegocioError (no se crea pago)
+    else sin mensualidad vigente
+      CS --> S : mensualidad ACTIVA (hoy … hoy+29), sin confirmar
+      S -> DB : INSERT pago (valor de la tarifa, medio, referencia)
+      note right of S : mensualidad y pago se confirman\njuntos en un solo commit
+      alt otra petición activó la mensualidad a la vez (UNIQUE)
+        DB --> S : IntegrityError → rollback
+        S --> R : ReglaNegocioError «ya tiene una mensualidad activa»
+      else guardado
+        DB --> S : commit
+        S --> R : pago
+        R --> UI : redirect al comprobante «Pago … registrado. Mensualidad activa del … al …»
+      end
+    end
+  end
+end
+R --> UI : (si hubo ReglaNegocioError) 400 + mensaje, conserva lo escrito
+@enduml

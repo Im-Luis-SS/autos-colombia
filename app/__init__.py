@@ -4,6 +4,7 @@ from flask import Flask, render_template
 from app.config import Config
 from app.extensions import db
 from app.services import formatear_duracion
+from app.services.pagos import formatear_pesos
 
 
 def create_app(config_class=Config):
@@ -16,6 +17,7 @@ def create_app(config_class=Config):
     from app.routes import auth_bp, consultas_bp, movimientos_bp
     from app.routes.celdas import celdas_bp
     from app.routes.clientes import clientes_bp
+    from app.routes.pagos import pagos_bp, tarifas_bp
     from app.routes.usuarios import usuarios_bp
     from app.security import cargar_usuario_actual, csrf_token, proteger_csrf
 
@@ -25,6 +27,8 @@ def create_app(config_class=Config):
     app.register_blueprint(usuarios_bp)
     app.register_blueprint(clientes_bp)
     app.register_blueprint(celdas_bp)
+    app.register_blueprint(pagos_bp)
+    app.register_blueprint(tarifas_bp)
     app.before_request(cargar_usuario_actual)
     app.before_request(proteger_csrf)
 
@@ -42,6 +46,7 @@ def create_app(config_class=Config):
         return render_template("error.html", codigo=404, mensaje="La página o el registro que busca no existe."), 404
 
     app.jinja_env.filters["duracion"] = formatear_duracion
+    app.jinja_env.filters["pesos"] = formatear_pesos
 
     from app.cli import registrar_comandos
 

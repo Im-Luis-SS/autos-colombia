@@ -1,0 +1,41 @@
+@startuml
+skinparam shadowing false
+skinparam defaultFontName Liberation Sans
+skinparam defaultFontSize 12
+skinparam sequence {
+  ParticipantBackgroundColor #E8F0FB
+  ParticipantBorderColor #1F3A5F
+  LifeLineBorderColor #1F3A5F
+  ArrowColor #1F3A5F
+  GroupBackgroundColor #F5F7FA
+}
+skinparam NoteBackgroundColor #FFF6E0
+skinparam NoteBorderColor #E8A317
+title Secuencia 8 – Restablecer contraseña (iteración 2)
+actor Administrador
+participant "Navegador" as UI
+participant "usuarios_bp" as R
+participant "UsuarioService" as S
+database "MySQL" as DB
+
+Administrador -> UI : escribe la nueva contraseña y su confirmación
+UI -> R : POST /usuarios/{id}/clave (csrf_token)
+R -> R : admin_requerido
+R -> S : restablecer_clave(id, clave, confirmación)
+S -> DB : SELECT usuario WHERE id = ?
+alt el usuario no existe
+  S --> R : NoEncontradoError
+  R --> UI : 404
+else existe
+  alt no coinciden, tiene menos de 8 o más de 72 caracteres, o no mezcla letras y números
+    S --> R : ReglaNegocioError
+    R --> UI : 400 + mensaje
+  else contraseña válida
+    S -> S : cifrar contraseña (hash)
+    S -> DB : UPDATE usuario SET password_hash
+    DB --> S : commit
+    S --> R : usuario
+    R --> UI : redirect a la lista «Contraseña … restablecida»
+  end
+end
+@enduml

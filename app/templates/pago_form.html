@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block titulo %}Registrar pago{% endblock %}
+{% block contenido %}
+<h1>Registrar pago de mensualidad</h1>
+<p class="sub">Al registrar el pago, la mensualidad del vehículo se activa por 30 días.</p>
+<div class="tarjeta resumen-cobro" style="max-width:560px;">
+  <p><strong>Cliente:</strong> {{ cliente.nombre_completo }} ({{ cliente.tipo_documento }} {{ cliente.numero_documento }})</p>
+  <p><strong>Vehículo:</strong> <span class="placa-tag">{{ vehiculo.placa }}</span> {{ vehiculo.tipo.title() }}</p>
+  <p><strong>Periodo:</strong> {{ inicio.strftime('%d/%m/%Y') }} al {{ fin.strftime('%d/%m/%Y') }}</p>
+  <p class="valor-cobro"><strong>Valor a cobrar:</strong> {{ tarifa.valor | pesos }}</p>
+</div>
+<form method="post" class="tarjeta" style="max-width:560px;">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <input type="hidden" name="id_vehiculo" value="{{ vehiculo.id_vehiculo }}">
+  <label for="medio">Medio de pago</label>
+  <select id="medio" name="medio" required>
+    <option value="">Seleccione…</option>
+    {% for m in medios %}<option value="{{ m }}" {{ 'selected' if form.get('medio') == m }}>{{ m.title() }}</option>{% endfor %}
+  </select>
+  <div id="bloque-referencia">
+    <label for="referencia">Referencia (transferencia o tarjeta)</label>
+    <input type="text" id="referencia" name="referencia" maxlength="40" value="{{ form.get('referencia', '') }}" placeholder="N.º de transacción o aprobación">
+  </div>
+  <div class="acciones" style="margin-top:14px;">
+    <button class="boton" type="submit">Registrar pago y activar</button>
+    <a class="boton secundario" href="{{ url_for('clientes.detalle', id_cliente=cliente.id_cliente) }}">Cancelar</a>
+  </div>
+</form>
+<script>
+  (function () {
+    var medio = document.getElementById('medio'), bloque = document.getElementById('bloque-referencia');
+    function mostrar() { bloque.style.display = (medio.value === 'TRANSFERENCIA' || medio.value === 'TARJETA') ? '' : 'none'; }
+    medio.addEventListener('change', mostrar); mostrar();
+  })();
+</script>
+{% endblock %}

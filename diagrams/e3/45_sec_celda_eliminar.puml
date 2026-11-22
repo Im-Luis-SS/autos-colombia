@@ -1,0 +1,42 @@
+@startuml
+skinparam shadowing false
+skinparam defaultFontName Liberation Sans
+skinparam defaultFontSize 12
+skinparam sequence {
+  ParticipantBackgroundColor #E8F0FB
+  ParticipantBorderColor #1F3A5F
+  LifeLineBorderColor #1F3A5F
+  ArrowColor #1F3A5F
+  GroupBackgroundColor #F5F7FA
+}
+skinparam NoteBackgroundColor #FFF6E0
+skinparam NoteBorderColor #E8A317
+title Secuencia 14 – Eliminar celda (iteración 2)
+actor Administrador
+participant "Navegador" as UI
+participant "celdas_bp" as R
+participant "CeldaService" as S
+database "MySQL" as DB
+
+Administrador -> UI : pulsa «Eliminar» y confirma
+UI -> R : POST /celdas/{id}/eliminar (csrf_token)
+R -> R : admin_requerido
+R -> S : eliminar(id)
+S -> DB : SELECT celda WHERE id = ?
+alt la celda no existe
+  S --> R : NoEncontradoError
+  R --> UI : 404
+else existe
+  alt la celda está OCUPADA
+    S --> R : ReglaNegocioError «está ocupada»
+  else tiene historial de movimientos
+    S --> R : ReglaNegocioError «tiene historial… Póngala en mantenimiento»
+  else sin vehículo ni historial
+    S -> DB : DELETE celda
+    DB --> S : commit
+    S --> R : código
+    R --> UI : redirect «Celda … eliminada»
+  end
+end
+R --> UI : (si hubo ReglaNegocioError) redirect a la lista con el mensaje
+@enduml

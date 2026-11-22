@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block titulo %}Editar tarifa{% endblock %}
+{% block contenido %}
+<h1>Editar tarifa de {{ tarifa.tipo_vehiculo.lower() }}s</h1>
+<form method="post" class="tarjeta" style="max-width:480px;">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <label for="valor">Valor de la mensualidad (pesos)</label>
+  <input type="text" id="valor" name="valor" inputmode="numeric" value="{{ valor }}" required>
+  <p class="sub">Entre $10.000 y $5.000.000. Aplica a los pagos que se registren desde ahora.</p>
+  <div class="acciones" style="margin-top:14px;">
+    <button class="boton" type="submit">Guardar</button>
+    <a class="boton secundario" href="{{ url_for('tarifas.lista') }}">Cancelar</a>
+  </div>
+</form>
+{% endblock %}

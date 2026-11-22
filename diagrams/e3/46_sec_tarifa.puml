@@ -1,0 +1,42 @@
+@startuml
+skinparam shadowing false
+skinparam defaultFontName Liberation Sans
+skinparam defaultFontSize 12
+skinparam sequence {
+  ParticipantBackgroundColor #E8F0FB
+  ParticipantBorderColor #1F3A5F
+  LifeLineBorderColor #1F3A5F
+  ArrowColor #1F3A5F
+  GroupBackgroundColor #F5F7FA
+}
+skinparam NoteBackgroundColor #FFF6E0
+skinparam NoteBorderColor #E8A317
+title Secuencia 15 – Editar tarifa de la mensualidad (iteración 3)
+actor Administrador
+participant "Navegador" as UI
+participant "tarifas_bp" as R
+participant "TarifaService" as S
+database "MySQL" as DB
+
+Administrador -> UI : escribe el nuevo valor de la tarifa
+UI -> R : POST /tarifas/{tipo}/editar (valor, csrf_token)
+R -> R : admin_requerido
+R -> S : actualizar(tipo, valor)
+S -> DB : SELECT tarifa WHERE tipo_vehiculo = ?
+alt el tipo no existe
+  S --> R : NoEncontradoError
+  R --> UI : 404
+else existe
+  S -> S : quitar «$», puntos y comas del valor
+  alt no es un número entero o está fuera de $10.000 – $5.000.000
+    S --> R : ReglaNegocioError «El valor debe…»
+    R --> UI : 400 + mensaje, conserva lo escrito
+  else valor válido
+    S -> DB : UPDATE tarifa SET valor = ?
+    DB --> S : commit
+    S --> R : tarifa
+    R --> UI : redirect a la lista «Tarifa … actualizada»
+    note right of R : los pagos ya registrados\nconservan su valor
+  end
+end
+@enduml

@@ -17,6 +17,7 @@
     <a href="{{ url_for('consultas.dentro') }}" class="{{ 'activo' if request.endpoint == 'consultas.dentro' }}">Vehículos dentro</a>
     {% if g.usuario.es_administrador() %}
     <a href="{{ url_for('clientes.lista') }}" class="{{ 'activo' if request.endpoint and request.endpoint.startswith('clientes.') }}">Clientes</a>
+    <a href="{{ url_for('pagos.lista') }}" class="{{ 'activo' if request.endpoint and (request.endpoint.startswith('pagos.') or request.endpoint.startswith('tarifas.')) }}">Pagos</a>
     <a href="{{ url_for('celdas.lista') }}" class="{{ 'activo' if request.endpoint and request.endpoint.startswith('celdas.') }}">Celdas</a>
     <a href="{{ url_for('usuarios.lista') }}" class="{{ 'activo' if request.endpoint and request.endpoint.startswith('usuarios.') }}">Usuarios</a>
     <a href="{{ url_for('consultas.historial') }}" class="{{ 'activo' if request.endpoint == 'consultas.historial' }}">Historial</a>

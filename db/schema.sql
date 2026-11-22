@@ -1,5 +1,5 @@
 -- =====================================================================
---  Parqueadero "Autos Colombia" - Iteración 1: entrada y salida
+--  Parqueadero "Autos Colombia" - Iteraciones 1 a 3: entrada/salida, usuarios/celdas y pagos
 --  Modelo físico para MySQL 8.0+ (InnoDB, utf8mb4)
 --  Uso en MySQL Workbench: File > Open SQL Script > ejecutar todo (rayo).
 --  Para ver el diagrama EER: Database > Reverse Engineer...
@@ -58,7 +58,7 @@ CREATE TABLE vehiculo (
 ) ENGINE=InnoDB;
 
 -- ---------------------------------------------------------------------
--- Mensualidades (su pago se gestiona en la iteración de pagos)
+-- Mensualidades (cada una se activa al registrar su pago; ver tabla pago)
 -- ---------------------------------------------------------------------
 CREATE TABLE mensualidad (
   id_mensualidad  INT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -126,5 +126,50 @@ CREATE TABLE movimiento (
   CONSTRAINT fk_mov_usuario_entrada FOREIGN KEY (id_usuario_entrada)
     REFERENCES usuario_sistema (id_usuario) ON UPDATE CASCADE ON DELETE RESTRICT,
   CONSTRAINT fk_mov_usuario_salida FOREIGN KEY (id_usuario_salida)
+    REFERENCES usuario_sistema (id_usuario) ON UPDATE CASCADE ON DELETE RESTRICT
+) ENGINE=InnoDB;
+
+-- ---------------------------------------------------------------------
+-- Tarifas (iteración 3): valor de la mensualidad por tipo de vehículo, en pesos
+-- ---------------------------------------------------------------------
+CREATE TABLE tarifa (
+  id_tarifa      INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  tipo_vehiculo  ENUM('CARRO','MOTO') NOT NULL,
+  valor          INT UNSIGNED NOT NULL,
+  PRIMARY KEY (id_tarifa),
+  UNIQUE KEY uq_tarifa_tipo (tipo_vehiculo),
+  CONSTRAINT ck_tarifa_valor CHECK (valor > 0)
+) ENGINE=InnoDB;
+
+-- ---------------------------------------------------------------------
+-- Pagos (iteración 3): un pago por mensualidad. Guarda el valor cobrado en
+-- ese momento (no cambia si luego se edita la tarifa). Al anular un pago, su
+-- mensualidad pasa a CANCELADA.
+-- ---------------------------------------------------------------------
+CREATE TABLE pago (
+  id_pago               INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  id_mensualidad        INT UNSIGNED NOT NULL,
+  valor                 INT UNSIGNED NOT NULL,
+  medio                 ENUM('EFECTIVO','TRANSFERENCIA','TARJETA') NOT NULL,
+  referencia            VARCHAR(40) NULL,
+  fecha_hora            DATETIME NOT NULL,
+  estado                ENUM('REGISTRADO','ANULADO') NOT NULL DEFAULT 'REGISTRADO',
+  motivo_anulacion      VARCHAR(255) NULL,
+  fecha_hora_anulacion  DATETIME NULL,
+  id_usuario            INT UNSIGNED NOT NULL,
+  id_usuario_anulo      INT UNSIGNED NULL,
+  PRIMARY KEY (id_pago),
+  UNIQUE KEY uq_pago_mensualidad (id_mensualidad),
+  KEY ix_pago_fecha (fecha_hora),
+  CONSTRAINT ck_pago_valor CHECK (valor > 0),
+  CONSTRAINT ck_pago_anulacion CHECK (
+    (estado = 'REGISTRADO' AND motivo_anulacion IS NULL)
+    OR (estado = 'ANULADO' AND motivo_anulacion IS NOT NULL)
+  ),
+  CONSTRAINT fk_pago_mensualidad FOREIGN KEY (id_mensualidad)
+    REFERENCES mensualidad (id_mensualidad) ON UPDATE CASCADE ON DELETE RESTRICT,
+  CONSTRAINT fk_pago_usuario FOREIGN KEY (id_usuario)
+    REFERENCES usuario_sistema (id_usuario) ON UPDATE CASCADE ON DELETE RESTRICT,
+  CONSTRAINT fk_pago_usuario_anulo FOREIGN KEY (id_usuario_anulo)
     REFERENCES usuario_sistema (id_usuario) ON UPDATE CASCADE ON DELETE RESTRICT
 ) ENGINE=InnoDB;

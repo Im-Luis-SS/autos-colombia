@@ -1,7 +1,4 @@
-import os
-
 import pytest
-from sqlalchemy.engine import make_url
 
 from app import create_app
 from app.cli import cargar_datos_ejemplo
@@ -11,20 +8,8 @@ from app.extensions import db
 
 @pytest.fixture()
 def app():
-    """App de pruebas. Con TEST_DATABASE_URL (base *_test) corre sobre MySQL; si no, SQLite."""
-    config = TestConfig
-    url = os.environ.get("TEST_DATABASE_URL")
-    if url:
-        if not (make_url(url).database or "").endswith("_test"):
-            pytest.skip("TEST_DATABASE_URL debe apuntar a una base cuyo nombre termine en _test")
-
-        class config(TestConfig):  # noqa: N801
-            SQLALCHEMY_DATABASE_URI = url
-
-    app = create_app(config)
+    app = create_app(TestConfig)
     with app.app_context():
-        if url:
-            db.drop_all()
         db.create_all()
         cargar_datos_ejemplo()
         yield app

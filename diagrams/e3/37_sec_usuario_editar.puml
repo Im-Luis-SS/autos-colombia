@@ -1,0 +1,44 @@
+@startuml
+skinparam shadowing false
+skinparam defaultFontName Liberation Sans
+skinparam defaultFontSize 12
+skinparam sequence {
+  ParticipantBackgroundColor #E8F0FB
+  ParticipantBorderColor #1F3A5F
+  LifeLineBorderColor #1F3A5F
+  ArrowColor #1F3A5F
+  GroupBackgroundColor #F5F7FA
+}
+skinparam NoteBackgroundColor #FFF6E0
+skinparam NoteBorderColor #E8A317
+title Secuencia 6 – Editar usuario (iteración 2)
+actor Administrador
+participant "Navegador" as UI
+participant "usuarios_bp" as R
+participant "UsuarioService" as S
+database "MySQL" as DB
+
+Administrador -> UI : cambia nombre o rol
+UI -> R : POST /usuarios/{id}/editar (csrf_token)
+R -> R : admin_requerido
+R -> S : editar(id, nombre, rol)
+S -> DB : SELECT usuario WHERE id = ?
+alt el usuario no existe
+  S --> R : NoEncontradoError
+  R --> UI : 404
+else existe
+  alt nombre inválido o rol inválido
+    S --> R : ReglaNegocioError
+  else datos válidos
+    alt es el último administrador activo y se le quita el rol
+      S --> R : ReglaNegocioError «último administrador activo»
+    else cambio permitido
+      S -> DB : UPDATE usuario (nombre, rol)
+      DB --> S : commit
+      S --> R : usuario
+      R --> UI : redirect a la lista «Usuario actualizado»
+    end
+  end
+end
+R --> UI : (si hubo ReglaNegocioError) 400 + mensaje
+@enduml

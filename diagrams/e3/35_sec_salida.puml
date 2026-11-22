@@ -1,0 +1,43 @@
+@startuml
+skinparam shadowing false
+skinparam defaultFontName Liberation Sans
+skinparam defaultFontSize 12
+skinparam sequence {
+  ParticipantBackgroundColor #E8F0FB
+  ParticipantBorderColor #1F3A5F
+  LifeLineBorderColor #1F3A5F
+  ArrowColor #1F3A5F
+  GroupBackgroundColor #F5F7FA
+}
+skinparam NoteBackgroundColor #FFF6E0
+skinparam NoteBorderColor #E8A317
+title Secuencia 4 – Registrar salida (iteración 1)
+actor Operario
+participant "Navegador" as UI
+participant "movimientos_bp" as R
+participant "MovimientoService" as S
+database "MySQL" as DB
+
+Operario -> UI : escribe placa y observaciones de salida
+UI -> R : POST /salida (csrf_token)
+R -> S : registrar_salida(placa, operario, observaciones)
+alt observaciones de más de 255 caracteres
+  S --> R : ReglaNegocioError
+else nota válida
+  S -> DB : SELECT vehículo WHERE placa = ?
+  alt placa vacía, mal formada o no registrada
+    S --> R : ReglaNegocioError
+  else vehículo registrado
+    S -> DB : SELECT movimiento abierto del vehículo
+    alt no tiene entrada abierta
+      S --> R : ReglaNegocioError «no tiene una entrada registrada»
+    else está dentro
+      S -> DB : UPDATE movimiento (salida, usuario, observaciones_salida)\nUPDATE celda → LIBRE
+      DB --> S : commit
+      S --> R : movimiento (con permanencia)
+      R --> UI : redirect «Salida registrada… Permanencia: …»
+    end
+  end
+end
+R --> UI : (si hubo ReglaNegocioError) 400 + mensaje
+@enduml

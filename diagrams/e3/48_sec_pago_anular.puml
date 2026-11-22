@@ -1,0 +1,45 @@
+@startuml
+skinparam shadowing false
+skinparam defaultFontName Liberation Sans
+skinparam defaultFontSize 12
+skinparam sequence {
+  ParticipantBackgroundColor #E8F0FB
+  ParticipantBorderColor #1F3A5F
+  LifeLineBorderColor #1F3A5F
+  ArrowColor #1F3A5F
+  GroupBackgroundColor #F5F7FA
+}
+skinparam NoteBackgroundColor #FFF6E0
+skinparam NoteBorderColor #E8A317
+title Secuencia 17 – Anular un pago (iteración 3)
+actor Administrador
+participant "Navegador" as UI
+participant "pagos_bp" as R
+participant "PagoService" as S
+database "MySQL" as DB
+
+Administrador -> UI : en el comprobante escribe el motivo y pulsa «Anular pago»
+UI -> R : POST /pagos/{id}/anular (motivo, csrf_token)
+R -> R : admin_requerido
+R -> S : anular(id, motivo, administrador)
+S -> DB : SELECT pago WHERE id = ?
+alt el pago no existe
+  S --> R : NoEncontradoError
+  R --> UI : 404
+else existe
+  alt el pago ya está ANULADO
+    S --> R : ReglaNegocioError «ya está anulado»
+  else el motivo tiene menos de 5 o más de 255 caracteres
+    S --> R : ReglaNegocioError
+  else su mensualidad ya venció (o ya no está ACTIVA)
+    S --> R : ReglaNegocioError «su mensualidad ya venció»
+  else anulación permitida
+    S -> DB : UPDATE pago → ANULADO (motivo, fecha, usuario)\nUPDATE mensualidad → CANCELADA
+    DB --> S : commit (un solo commit)
+    S --> R : pago
+    R --> UI : redirect al comprobante «Pago … anulado. La mensualidad quedó cancelada»
+    note right of R : sin mensualidad vigente, el vehículo\nno puede entrar (secuencia 3)
+  end
+end
+R --> UI : (si hubo ReglaNegocioError) 400 + mensaje, conserva el motivo
+@enduml

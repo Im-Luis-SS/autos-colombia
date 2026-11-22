@@ -102,3 +102,14 @@ td.acciones > * { display: inline-block; vertical-align: middle; margin: 2px 6px
 .chip.inactivo { background: #eceff3; color: #4b5563; }
 .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 @media (max-width: 640px) { .grid-2 { grid-template-columns: 1fr; } }
+.total-recaudado { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.total-recaudado strong { font-size: 1.5rem; color: var(--azul); }
+.valor-cobro { font-size: 1.15rem; font-weight: 700; color: var(--azul); }
+.comprobante { max-width: 640px; }
+.comprobante-cab { display: flex; justify-content: space-between; gap: 12px; border-bottom: 2px solid var(--acento); padding-bottom: 10px; margin-bottom: 10px; }
+.comprobante-num { text-align: right; font-weight: 800; font-size: 1.2rem; color: var(--azul); }
+table.datos th { width: 150px; background: transparent; padding-left: 0; }
+tr.fila-anulado td { color: #8c231a; }
+textarea { width: 100%; padding: 9px 11px; border: 1px solid var(--borde); border-radius: 7px; font: inherit; }
+@media print { header.barra, .no-imprimir, .aviso { display: none !important; } body { background: #fff; } .tarjeta { border: 0; box-shadow: none; } }
+.nowrap { white-space: nowrap; }

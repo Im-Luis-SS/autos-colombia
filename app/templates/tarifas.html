@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block titulo %}Tarifas{% endblock %}
+{% block contenido %}
+<div class="encabezado-pagina">
+  <h1>Tarifas de la mensualidad</h1>
+  <a class="boton secundario" href="{{ url_for('pagos.lista') }}">Volver a pagos</a>
+</div>
+<p class="sub">Valor de una mensualidad de {{ dias }} días según el tipo de vehículo. Cambiar la tarifa no modifica los pagos ya registrados.</p>
+<div class="tarjeta">
+  <table>
+    <thead><tr><th>Tipo de vehículo</th><th>Valor mensual</th><th>Acciones</th></tr></thead>
+    <tbody>
+    {% for t in tarifas %}
+      <tr>
+        <td><strong>{{ t.tipo_vehiculo.title() }}</strong></td>
+        <td>{{ t.valor | pesos }}</td>
+        <td class="acciones"><a class="boton peq secundario" href="{{ url_for('tarifas.editar', tipo=t.tipo_vehiculo) }}">Editar</a></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

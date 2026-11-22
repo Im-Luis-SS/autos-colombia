@@ -1,0 +1,46 @@
+@startuml
+skinparam shadowing false
+skinparam defaultFontName Liberation Sans
+skinparam defaultFontSize 12
+skinparam sequence {
+  ParticipantBackgroundColor #E8F0FB
+  ParticipantBorderColor #1F3A5F
+  LifeLineBorderColor #1F3A5F
+  ArrowColor #1F3A5F
+  GroupBackgroundColor #F5F7FA
+}
+skinparam NoteBackgroundColor #FFF6E0
+skinparam NoteBorderColor #E8A317
+title Secuencia 18 – Consultar pagos y ver el comprobante (iteración 3)
+actor Administrador
+participant "Navegador" as UI
+participant "pagos_bp" as R
+participant "PagoService" as S
+database "MySQL" as DB
+
+Administrador -> UI : filtra por cliente/placa, fechas, medio o estado
+UI -> R : GET /pagos?q&desde&hasta&medio&estado
+R -> R : admin_requerido
+R -> S : listar(filtros)
+alt la fecha inicial es posterior a la final
+  S --> R : ReglaNegocioError
+  R --> UI : aviso «La fecha inicial no puede ser posterior…» y lista sin filtro de fechas
+else filtros válidos
+  S -> DB : SELECT pagos JOIN mensualidad, vehículo, cliente\nWHERE filtros ORDER BY fecha DESC (paginado)
+  DB --> S : página de pagos
+  R -> S : total_recaudado(filtros)
+  S -> DB : SELECT SUM(valor) WHERE estado = 'REGISTRADO' AND filtros
+  DB --> S : total
+  R --> UI : lista de pagos y total recaudado (sin anulados)
+end
+Administrador -> UI : pulsa «Comprobante»
+UI -> R : GET /pagos/{id}
+R -> S : obtener(id)
+S -> DB : SELECT pago WHERE id = ?
+alt el pago no existe
+  S --> R : NoEncontradoError
+  R --> UI : 404
+else existe
+  R --> UI : comprobante imprimible (con formulario de anulación si está REGISTRADO)
+end
+@enduml

@@ -1,0 +1,45 @@
+@startuml
+skinparam shadowing false
+skinparam defaultFontName Liberation Sans
+skinparam defaultFontSize 12
+skinparam sequence {
+  ParticipantBackgroundColor #E8F0FB
+  ParticipantBorderColor #1F3A5F
+  LifeLineBorderColor #1F3A5F
+  ArrowColor #1F3A5F
+  GroupBackgroundColor #F5F7FA
+}
+skinparam NoteBackgroundColor #FFF6E0
+skinparam NoteBorderColor #E8A317
+title Secuencia 5 – Crear usuario (iteración 2)
+actor Administrador
+participant "Navegador" as UI
+participant "usuarios_bp" as R
+participant "UsuarioService" as S
+database "MySQL" as DB
+
+Administrador -> UI : llena nombre, usuario, rol y contraseña
+UI -> R : POST /usuarios/nuevo (csrf_token)
+R -> R : admin_requerido
+R -> S : crear(nombre, username, clave, confirmación, rol)
+alt nombre, usuario, rol o contraseña inválidos, o confirmación distinta
+  S --> R : ReglaNegocioError
+else datos válidos
+  S -> DB : SELECT usuario (sin distinguir mayúsculas)
+  alt el usuario ya existe
+    S --> R : ReglaNegocioError «Ya existe un usuario…»
+  else disponible
+    S -> S : cifrar contraseña (hash)
+    S -> DB : INSERT usuario_sistema (activo)
+    alt otro administrador lo creó a la vez (UNIQUE)
+      DB --> S : IntegrityError → rollback
+      S --> R : ReglaNegocioError «Ya existe un usuario…»
+    else guardado
+      DB --> S : commit
+      S --> R : usuario
+      R --> UI : redirect a la lista «Usuario creado»
+    end
+  end
+end
+R --> UI : (si hubo ReglaNegocioError) 400 + mensaje, conserva lo escrito
+@enduml

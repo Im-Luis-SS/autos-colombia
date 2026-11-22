@@ -1,0 +1,60 @@
+@startuml
+skinparam shadowing false
+skinparam defaultFontName Liberation Sans
+skinparam defaultFontSize 11
+skinparam componentStyle rectangle
+skinparam ArrowColor #1F3A5F
+skinparam component {
+  BackgroundColor #E8F0FB
+  BorderColor #1F3A5F
+}
+skinparam package {
+  BorderColor #1F3A5F
+}
+title Diagrama de componentes – Autos Colombia (iteraciones 1, 2 y 3)
+
+component "Navegador web\n(HTML + CSS)" as NAV
+
+package "Presentación (blueprints Flask + plantillas Jinja2)" as P {
+  component "auth_bp\n«it.1»" as AU
+  component "movimientos_bp\n«it.1»" as MO
+  component "consultas_bp\n«it.1»" as CO
+  component "usuarios_bp\n«it.2»" as US
+  component "clientes_bp\n«it.2»" as CL
+  component "celdas_bp\n«it.2»" as CE
+  component "pagos_bp\n«it.3»" as PA
+  component "tarifas_bp\n«it.3»" as TA
+}
+component "Seguridad: sesión, roles y CSRF\n«it.1 y 2»" as SEC
+
+package "Lógica de negocio (servicios)" as L {
+  component "AuthService\n«it.1»" as SA
+  component "MovimientoService\nOcupacionService «it.1»" as SM
+  component "UsuarioService\n«it.2»" as SU
+  component "ClienteService\n«it.2»" as SC
+  component "CeldaService\n«it.2»" as SCE
+  component "PagoService\n«it.3»" as SP
+  component "TarifaService\n«it.3»" as ST
+}
+
+package "Acceso a datos" as D {
+  component "Modelos SQLAlchemy:\nUsuarioSistema, Cliente, Vehiculo, Mensualidad,\nCelda, Movimiento, Tarifa «it.3», Pago «it.3»" as ORM
+}
+database "MySQL 9.4" as DB
+
+NAV -down-> P : HTTP
+P -right-> SEC : usa
+AU -down-> SA
+MO -down-> SM
+CO -down-> SM
+US -down-> SU
+CL -down-> SC
+CE -down-> SCE
+PA -down-> SP
+TA -down-> ST
+SP -right-> SC : preparar_mensualidad
+SP -down-> ST : tarifa del tipo
+SM -right-> SCE : [usa celdas libres]
+L -down-> ORM
+ORM -down-> DB : PyMySQL
+@enduml

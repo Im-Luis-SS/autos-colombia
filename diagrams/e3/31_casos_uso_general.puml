@@ -1,0 +1,66 @@
+@startuml
+left to right direction
+skinparam shadowing false
+skinparam defaultFontName Liberation Sans
+skinparam defaultFontSize 11
+skinparam actorStyle awesome
+skinparam usecase {
+  BackgroundColor #E8F0FB
+  BorderColor #1F3A5F
+}
+skinparam rectangle {
+  BackgroundColor #FFFFFF
+  BorderColor #1F3A5F
+}
+skinparam package {
+  BorderColor #8CA0BA
+}
+title Casos de uso – Visión general de las tres iteraciones
+
+actor Operario as OPE
+actor Administrador as ADM
+ADM -|> OPE
+
+rectangle "Sistema Autos Colombia" {
+  usecase "Iniciar sesión" as LOGIN
+  package "Iteración 1: entrada y salida" {
+    usecase "Registrar entrada" as EN
+    usecase "Registrar salida" as SA
+    usecase "Ver panel y vehículos dentro" as PA
+    usecase "Consultar historial" as HI
+    usecase "Validar mensualidad vigente" as VM
+    usecase "Asignar celda libre del tipo\n(excluye mantenimiento)" as AS
+  }
+  package "Iteración 2: usuarios, clientes y celdas" {
+    usecase "Gestionar usuarios\n(crear, editar, activar, restablecer)" as US
+    usecase "Registrar cliente" as CL
+    usecase "Registrar vehículo" as VE
+    usecase "Gestionar celdas\n(crear, editar, mantenimiento, eliminar)" as CE
+  }
+  package "Iteración 3: pagos" {
+    usecase "Consultar y editar tarifas" as TA
+    usecase "Registrar pago de mensualidad" as PG
+    usecase "Activar mensualidad 30 días" as AM
+    usecase "Consultar pagos y comprobante" as CP
+    usecase "Anular pago" as AN
+  }
+}
+OPE --> LOGIN
+OPE --> EN
+OPE --> SA
+OPE --> PA
+ADM --> HI
+ADM --> US
+ADM --> CL
+ADM --> VE
+ADM --> CE
+ADM --> TA
+ADM --> PG
+ADM --> CP
+ADM --> AN
+EN ..> VM : <<include>>
+EN ..> AS : <<include>>
+PG ..> AM : <<include>>
+AN ..> CP : <<extend>>
+VM ..> AM : usa su resultado
+@enduml
